@@ -36,6 +36,9 @@ export class VideoService {
 
             if (!response.ok) {
                 const errorData = await response.json();
+                if (response.status === 429) {
+                    throw new Error("YouTube is blocking requests. Try again in 60 seconds.");
+                }
                 throw new Error(errorData.detail || 'Unknown error occurred');
             }
 

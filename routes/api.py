@@ -1,6 +1,7 @@
 from fastapi import Depends, APIRouter, HTTPException, Query
 from fastapi_limiter.depends import RateLimiter
 import time
+from config import PROXY_URL
 from youtube_transcript_api import YouTubeTranscriptApi, NoTranscriptFound
 from cache import get_cached_or_fetch
 from services.youtube import get_video_metadata, get_safe_metadata
@@ -14,9 +15,13 @@ SUPPORTED_LANGS = ["en", "es", "fr", "de", "hi", "ja"]
 
 def fetch_youtube_transcript(video_id: str, lang: str = "en") -> list[dict]:
     max_retries = 3
+    proxies = None
+    if PROXY_URL:
+        proxies = {'http': PROXY_URL, 'https': PROXY_URL}
+
     for attempt in range(max_retries):
         try:
-            return YouTubeTranscriptApi.get_transcript(video_id, languages=[lang])
+            return YouTubeTranscriptApi.get_transcript(video_id, languages=[lang], proxies=proxies)
         except NoTranscriptFound as e:
             if attempt == max_retries - 1:
                 raise HTTPException(

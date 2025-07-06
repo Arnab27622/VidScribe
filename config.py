@@ -11,4 +11,4 @@ if not GEMINI_API_KEY or not YOUTUBE_API_KEY:
     raise ValueError("Missing required API keys")
 
 # Rate limiting configuration
-RATE_LIMITS = {"transcript": "5/minute"}
+RATE_LIMITS = {"transcript": "10/minute"}

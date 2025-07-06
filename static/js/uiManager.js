@@ -53,7 +53,6 @@ export class UIManager {
                 page_size: page_size
             };
 
-            // Render using existing createVideoInfoCard and createTranscriptCard
             this.resultsContainer.innerHTML = this.createVideoInfoCard(pageData) + this.createTranscriptCard(pageData);
             this.setupEventHandlers(pageData);
         } catch (error) {

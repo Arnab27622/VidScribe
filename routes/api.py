@@ -19,7 +19,6 @@ def fetch_youtube_transcript(video_id: str, lang: str = "en") -> list[dict]:
             return YouTubeTranscriptApi.get_transcript(video_id, languages=[lang])
         except NoTranscriptFound as e:
             if attempt == max_retries - 1:
-                # Simplified error message
                 raise HTTPException(
                     status_code=404,
                     detail="No transcript available in selected language",

@@ -27,7 +27,6 @@ export class VideoService {
             }
 
             this.setLoadingState(true);
-            // Clear previous results
             this.resultsContainer.innerHTML = '';
             this.resultsContainer.classList.add('d-none');
 

@@ -68,8 +68,8 @@ YoutubeVideo-Summerizer-VidScribe/
 
 ### 1. Clone the Repository
 ```bash
-git clone <repository-url>
-cd vidscribe
+git clone https://github.com/Arnab27622/YoutubeVideo-Summerizer-VidScribe.git
+cd YoutubeVideo-Summerizer-VidScribe
 ```
 
 ### 2. Create Virtual Environment
@@ -94,19 +94,7 @@ Create a `.env` file in the root directory:
 ```env
 GEMINI_API_KEY=your_gemini_api_key_here
 YOUTUBE_API_KEY=your_youtube_api_key_here
-REDIS_URL=redis://localhost:6379/0
-```
-
-### 5. Start Redis Server
-```bash
-# On Windows (if using Redis on Windows)
-redis-server
-
-# On macOS with Homebrew
-brew services start redis
-
-# On Ubuntu/Debian
-sudo systemctl start redis-server
+REDIS_URL=your_redis_url
 ```
 
 ### 6. Run the Application
@@ -121,7 +109,7 @@ The application will be available at `http://localhost:8000`
 ### Endpoints
 
 #### `GET /transcript/{video_id}`
-Extract and analyze YouTube video transcript.
+Extract and analyze the YouTube video transcript.
 
 **Parameters:**
 - `video_id` (path): YouTube video ID (11 characters)
@@ -211,16 +199,14 @@ Extract and analyze YouTube video transcript.
 ### Basic Usage
 1. Open the application in your browser
 2. Paste a YouTube URL in the input field
-3. Select your preferred language
-4. Click "Analyze" to process the video
-5. View the generated summary and transcript
+3. Click "Analyze" to process the video
+4. View the generated summary and transcript
 
 ### Advanced Features
 - **Search Transcript**: Use the search box to find specific content
-- **Highlight Keywords**: Click the highlight button to mark search terms
 - **Navigate Timestamps**: Click timestamp links to jump to video moments
 - **Download Summary**: Export the analysis as a text file
-- **Copy Transcript**: Copy the full transcript to clipboard
+- **Copy Transcript**: Copy the full transcript to the clipboard
 
 ## 📊 Performance Features
 
@@ -247,27 +233,6 @@ Extract and analyze YouTube video transcript.
 - **Error Sanitization**: Safe error message handling
 - **Environment Variables**: Secure API key management
 
-## 🐛 Troubleshooting
-
-### Common Issues
-
-**"No transcript available"**
-- Some videos don't have auto-generated transcripts
-- Try a different language option
-- Ensure the video is publicly accessible
-
-**"Rate limit exceeded"**
-- Wait for the specified cooldown period
-- Consider implementing user authentication for higher limits
-
-**"Invalid video ID"**
-- Ensure you're using a valid YouTube URL
-- Check that the video exists and is public
-
-**Redis connection errors**
-- Verify the Redis server is running
-- Check REDIS_URL in your .env file
-
 ## 🤝 Contributing
 
 1. Fork the repository
@@ -278,18 +243,4 @@ Extract and analyze YouTube video transcript.
 
 ## 📝 License
 
-This project is open source and available under the [MIT License](LICENSE).
-
-## 🙏 Acknowledgments
-
-- **Google Gemini AI** for powerful text analysis capabilities
-- **YouTube Data API** for video metadata access
-- **YouTube Transcript API** for transcript extraction
-- **FastAPI** for the excellent web framework
-- **Bootstrap** for responsive design components
-
----
-
-**Made with ❤️ for the YouTube community**
-
-*VidScribe - Transform YouTube videos into structured insights*
+This open-source project is available under the [MIT License](LICENSE).

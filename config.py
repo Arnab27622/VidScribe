@@ -11,4 +11,10 @@ if not GEMINI_API_KEY or not YOUTUBE_API_KEY:
     raise ValueError("Missing required API keys")
 
 # Rate limiting configuration
-RATE_LIMITS = {"transcript": "10/minute"}
+# Rate limiting configuration
+# Rate limiting configuration
+RATE_LIMIT_TRANSCRIPT_TIMES = 10
+RATE_LIMIT_TRANSCRIPT_SECONDS = 60
+
+# Security configuration
+CORS_ORIGINS = os.getenv("CORS_ORIGINS", "*").split(",")

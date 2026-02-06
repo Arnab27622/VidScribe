@@ -1,19 +1,20 @@
-import requests
+import httpx
 from fastapi import HTTPException
 from config import YOUTUBE_API_KEY
 from utils import iso8601_to_seconds
 
 
-def get_video_metadata(video_id: str) -> dict:
+async def get_video_metadata(video_id: str) -> dict:
     try:
-        response = requests.get(
-            "https://www.googleapis.com/youtube/v3/videos",
-            params={
-                "part": "snippet,contentDetails",
-                "id": video_id,
-                "key": YOUTUBE_API_KEY,
-            },
-        )
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                "https://www.googleapis.com/youtube/v3/videos",
+                params={
+                    "part": "snippet,contentDetails",
+                    "id": video_id,
+                    "key": YOUTUBE_API_KEY,
+                },
+            )
 
         if response.status_code != 200:
             return {}

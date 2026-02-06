@@ -4,19 +4,18 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi_limiter import FastAPILimiter
-from fastapi_limiter.depends import RateLimiter
-from fastapi import Depends
-import redis.asyncio as aioredis
+import cache
 from routes import api, ui
-from config import REDIS_URL, RATE_LIMITS
+from config import CORS_ORIGINS
 from exception_handlers import rate_limit_exceeded_handler
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    redis_async = aioredis.from_url(REDIS_URL, encoding="utf-8", decode_responses=True)
-    await FastAPILimiter.init(redis_async)
+    await cache.init_redis()
+    await FastAPILimiter.init(cache.redis_client)
     yield
+    await cache.close_redis()
 
 
 app = FastAPI(
@@ -28,7 +27,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=CORS_ORIGINS,
     allow_methods=["*"],
     allow_headers=["*"],
 )

@@ -4,10 +4,10 @@ from config import GEMINI_API_KEY
 from utils import parse_gemini_response
 
 genai.configure(api_key=GEMINI_API_KEY)
-model = genai.GenerativeModel("gemini-1.5-flash")
+model = genai.GenerativeModel("gemini-2.5-flash")
 
 
-def generate_structured_summary(transcript_str: str) -> dict:
+async def generate_structured_summary(transcript_str: str) -> dict:
     MAX_TRANSCRIPT_LENGTH = 100000
     if len(transcript_str) > MAX_TRANSCRIPT_LENGTH:
         transcript_str = transcript_str[:MAX_TRANSCRIPT_LENGTH] + "\n[TRUNCATED]"
@@ -25,7 +25,7 @@ def generate_structured_summary(transcript_str: str) -> dict:
     """
 
     try:
-        response = model.generate_content(
+        response = await model.generate_content_async(
             prompt,
             generation_config=genai.types.GenerationConfig(
                 temperature=0.3,

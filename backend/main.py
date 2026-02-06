@@ -2,10 +2,10 @@ import os
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
+
 from fastapi_limiter import FastAPILimiter
 import cache
-from routes import api, ui
+from routes import api
 from config import CORS_ORIGINS
 from exception_handlers import rate_limit_exceeded_handler
 
@@ -32,9 +32,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(ui.router)
 app.include_router(api.router)
-app.mount("/static", StaticFiles(directory="static"), name="static")
 
 app.add_exception_handler(429, rate_limit_exceeded_handler)
 

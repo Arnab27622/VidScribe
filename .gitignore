@@ -1,5 +1,8 @@
-/.vscode
+.vscode
 **/__pycache__/
-/.env
-/venv
-/runtime.txt
+.env
+.venv
+venv
+runtime.txt
+node_modules
+.next

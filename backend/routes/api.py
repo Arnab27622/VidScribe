@@ -14,20 +14,47 @@ router = APIRouter()
 SUPPORTED_LANGS = ["en", "es", "fr", "de", "hi", "ja"]
 
 
-async def fetch_youtube_transcript(video_id: str, lang: str = "en") -> list[dict]:
+async def fetch_youtube_transcript(video_id: str, lang: str = "en") -> tuple[list[dict], str]:
     max_retries = 3
-
     for attempt in range(max_retries):
         try:
-            return await run_in_threadpool(
-                YouTubeTranscriptApi.get_transcript, video_id, languages=[lang]
+            transcript_list = await run_in_threadpool(
+                YouTubeTranscriptApi.list_transcripts, video_id
             )
-        except NoTranscriptFound as e:
-            if attempt == max_retries - 1:
-                raise HTTPException(
-                    status_code=404,
-                    detail="No transcript available in selected language",
-                )
+            
+            if lang == "auto":
+                try:
+                    # Try English first (manual then auto-generated)
+                    transcript_obj = transcript_list.find_transcript(["en"])
+                except:
+                    # Fallback to the first available transcript
+                    transcript_obj = next(iter(transcript_list))
+            else:
+                transcript_obj = transcript_list.find_transcript([lang])
+                
+            # Fetch the raw content
+            raw_data = await run_in_threadpool(transcript_obj.fetch)
+            
+            # CRITICAL: Ensure we have plain dictionaries for JSON serialization
+            clean_data = []
+            for seg in raw_data:
+                # Handle both dict-like and object-like segments
+                if isinstance(seg, dict):
+                    text = seg.get("text", "")
+                    start = seg.get("start", 0.0)
+                    duration = seg.get("duration", 0.0)
+                else:
+                    text = getattr(seg, "text", getattr(seg, "__getitem__", lambda x: "")("text"))
+                    start = getattr(seg, "start", getattr(seg, "__getitem__", lambda x: 0.0)("start"))
+                    duration = getattr(seg, "duration", getattr(seg, "__getitem__", lambda x: 0.0)("duration"))
+                
+                clean_data.append({
+                    "text": str(text),
+                    "start": float(start),
+                    "duration": float(duration)
+                })
+            
+            return clean_data, str(transcript_obj.language_code)
         except Exception as e:
             if attempt == max_retries - 1:
                 raise HTTPException(
@@ -47,21 +74,16 @@ async def fetch_youtube_transcript(video_id: str, lang: str = "en") -> list[dict
     ],
 )
 async def get_structured_transcript(
-    video_id: str, lang: str = Query("en", description="Transcript language code")
+    video_id: str, lang: str = Query("auto", description="Transcript language code. Use 'auto' for detection.")
 ):
     try:
         validate_video_id(video_id)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-    if lang not in SUPPORTED_LANGS:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Unsupported language. Supported: {', '.join(SUPPORTED_LANGS)}",
-        )
-
     try:
-        transcript = await get_cached_or_fetch(
+        # Use a special cache key for auto to store the resolved data
+        transcript_data, detected_lang = await get_cached_or_fetch(
             f"transcript:{video_id}:{lang}",
             fetch_youtube_transcript,
             video_id,
@@ -73,21 +95,21 @@ async def get_structured_transcript(
         safe_metadata = get_safe_metadata(video_id, metadata)
 
         transcript_str = "\n".join(
-            f"{seg['start']:.2f}s: {seg['text']}" for seg in transcript
+            f"{seg['start']:.2f}s: {seg['text']}" for seg in transcript_data
         )
 
         structured_data = await get_cached_or_fetch(
-            f"summary:{video_id}:{lang}",
+            f"summary:{video_id}:{detected_lang}",
             generate_structured_summary,
             transcript_str,
             ttl=86400,
         )
 
-        formatted_transcript = format_transcript(transcript)
+        formatted_transcript = format_transcript(transcript_data)
 
         return {
             "video_id": video_id,
-            "language": lang,
+            "language": detected_lang,
             "full_transcript": formatted_transcript,
             "total_segments": len(formatted_transcript),
             "metadata": safe_metadata,

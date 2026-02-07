@@ -77,74 +77,83 @@ export function TranscriptCard({ transcript, videoId }: TranscriptCardProps) {
     };
 
     return (
-        <div className="bg-white dark:bg-gray-800 shadow-sm rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
-            <div className="bg-cyan-500 text-white px-4 py-3 flex justify-between items-center">
-                <h3 className="text-lg font-medium mb-0">Transcript</h3>
-                <div className="flex items-center gap-2">
-                    <input
-                        type="text"
-                        placeholder="Search transcript..."
-                        className="px-2 py-1 text-sm rounded border-none focus:ring-0 text-gray-900 w-40 placeholder-gray-500"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                    />
+        <div className="bg-card text-card-foreground shadow-xl rounded-2xl border border-border/50 overflow-hidden flex flex-col h-150 transition-all hover:shadow-2xl">
+            <div className="bg-muted/30 border-b border-border/50 px-8 py-5 flex justify-between items-center shrink-0 backdrop-blur-sm">
+                <div className="flex items-center gap-3">
+                    <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
+                    <h3 className="text-xl font-bold tracking-tight">Transcript</h3>
+                </div>
+                <div className="flex items-center gap-3">
+                    <div className="relative group">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <span className="text-muted-foreground text-xs">Search</span>
+                        </div>
+                        <input
+                            type="text"
+                            placeholder="..."
+                            className="pl-12 pr-4 py-2 text-sm rounded-lg border border-border bg-background/50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 text-foreground w-32 focus:w-48 transition-all"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                    </div>
                     <button
                         onClick={() => setIsHighlightMode(!isHighlightMode)}
-                        className={`p-1.5 rounded border ${isHighlightMode ? 'bg-yellow-300 border-yellow-400 text-black shadow-inner' : 'border-white/50 text-white hover:bg-white/20'}`}
-                        title="Toggle Highlight"
+                        className={`p-2 rounded-lg border transition-all ${isHighlightMode ? 'bg-yellow-500/10 border-yellow-500/50 text-yellow-600 dark:text-yellow-400' : 'border-border bg-background/50 text-muted-foreground hover:bg-muted hover:text-foreground'}`}
+                        title="Toggle Highlight Mode"
                     >
                         <Highlighter className="w-4 h-4" />
                     </button>
                 </div>
             </div>
 
-            <div className="p-0">
-                <div className="h-[400px] overflow-y-auto custom-scrollbar p-3">
+            <div className="grow overflow-hidden flex flex-col min-h-0 bg-background/30">
+                <div className="grow overflow-y-auto custom-scrollbar p-6 space-y-1">
                     {paginatedTranscript.length > 0 ? (
                         paginatedTranscript.map((segment, index) => (
-                            <div key={index} className="p-1 mb-1 hover:bg-gray-50 dark:hover:bg-gray-700/30 rounded flex gap-2 text-sm border-b border-transparent hover:border-gray-100 dark:hover:border-gray-700">
+                            <div key={index} className="group p-3 hover:bg-muted/50 rounded-xl flex gap-4 text-sm transition-all border border-transparent hover:border-border/40">
                                 <button
                                     onClick={() => handleTimestampClick(segment.start)}
-                                    className="text-blue-600 hover:text-blue-800 dark:text-blue-400 font-mono text-xs pt-0.5 min-w-[3.5rem] text-right"
+                                    className="text-primary/70 group-hover:text-primary font-mono text-xs pt-1 min-w-14 text-right transition-colors font-medium opacity-60 group-hover:opacity-100"
                                 >
                                     {formatTime(segment.start)}
                                 </button>
-                                <div className="flex-grow text-gray-800 dark:text-gray-200 leading-relaxed">
+                                <div className="grow text-foreground/80 group-hover:text-foreground leading-relaxed transition-colors">
                                     {highlightText(segment.text, searchTerm)}
                                 </div>
                             </div>
                         ))
                     ) : (
-                        <div className="p-10 text-center text-gray-500 flex flex-col items-center">
+                        <div className="h-full flex flex-col items-center justify-center text-muted-foreground p-10 opacity-60">
                             <p>No segments found matching "{searchTerm}"</p>
                         </div>
                     )}
                 </div>
 
-                <div className="bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 px-4 py-2 flex flex-col sm:flex-row justify-between items-center text-sm gap-2">
-                    <span className="text-gray-600 dark:text-gray-400">
-                        Showing {(currentPage - 1) * pageSize + 1} to {Math.min(currentPage * pageSize, displayTranscript.length)} of {displayTranscript.length}
+                <div className="bg-muted/30 border-t border-border/50 px-8 py-4 flex flex-col sm:flex-row justify-between items-center text-sm gap-4 shrink-0 backdrop-blur-sm">
+                    <span className="text-muted-foreground font-medium text-xs uppercase tracking-wider">
+                        Showing {(currentPage - 1) * pageSize + 1} - {Math.min(currentPage * pageSize, displayTranscript.length)} of {displayTranscript.length}
                     </span>
                     <div className="flex items-center gap-2">
                         <button
                             onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                             disabled={currentPage === 1}
-                            className="p-1 rounded border border-blue-500 text-blue-500 hover:bg-blue-50 disabled:opacity-50 disabled:hover:bg-transparent"
+                            className="p-2 rounded-lg border border-border text-muted-foreground hover:bg-primary/10 hover:text-primary hover:border-primary/20 disabled:opacity-30 disabled:pointer-events-none transition-all"
                         >
                             <ChevronLeft className="w-4 h-4" />
                         </button>
                         <button
                             onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                             disabled={currentPage === totalPages || totalPages === 0}
-                            className="p-1 rounded border border-blue-500 text-blue-500 hover:bg-blue-50 disabled:opacity-50 disabled:hover:bg-transparent"
+                            className="p-2 rounded-lg border border-border text-muted-foreground hover:bg-primary/10 hover:text-primary hover:border-primary/20 disabled:opacity-30 disabled:pointer-events-none transition-all"
                         >
                             <ChevronRight className="w-4 h-4" />
                         </button>
+                        <div className="h-6 w-px bg-border mx-2"></div>
                         <button
                             onClick={handleCopy}
-                            className="ml-2 px-3 py-1 border border-gray-400 text-gray-600 dark:text-gray-300 rounded flex items-center gap-1 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                            className="px-4 py-2 border border-border text-muted-foreground hover:text-foreground rounded-lg flex items-center gap-2 hover:bg-muted transition-all font-medium text-xs uppercase tracking-wide"
                         >
-                            {copied ? <Check className="w-3 h-3 text-green-600" /> : <Copy className="w-3 h-3" />}
+                            {copied ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
                             Copy
                         </button>
                     </div>

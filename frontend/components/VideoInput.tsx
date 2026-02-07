@@ -10,74 +10,46 @@ interface VideoInputProps {
 
 export function VideoInput({ onAnalyze, isLoading }: VideoInputProps) {
     const [url, setUrl] = useState("");
-    const [lang, setLang] = useState("en");
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (url.trim()) {
-            onAnalyze(url, lang);
+            onAnalyze(url, "auto");
         }
     };
 
     return (
-        <div className="bg-white dark:bg-gray-800 shadow-sm rounded-lg border border-gray-200 dark:border-gray-700 mb-6">
-            <div className="p-6">
-                <form onSubmit={handleSubmit}>
-                    <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
-                        <div className="md:col-span-8 space-y-2">
-                            <label
-                                htmlFor="videoUrl"
-                                className="block text-base font-bold text-gray-700 dark:text-gray-200"
-                            >
-                                YouTube Video URL:
-                            </label>
-                            <div className="relative flex">
-                                <input
-                                    type="text"
-                                    id="videoUrl"
-                                    className="flex-1 block w-full px-3 py-2 border border-gray-300 rounded-l-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                                    placeholder="https://www.youtube.com/watch?v=..."
-                                    value={url}
-                                    onChange={(e) => setUrl(e.target.value)}
-                                    disabled={isLoading}
-                                />
-                                <button
-                                    type="submit"
-                                    disabled={isLoading || !url}
-                                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-r-md disabled:bg-blue-400 flex items-center gap-2 transition-colors whitespace-nowrap"
-                                >
-                                    {isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
-                                    {isLoading ? "Analyzing..." : "Analyze"}
-                                </button>
-                            </div>
-                            <p className="text-xs text-gray-500 mt-1">Enter full URL of the YouTube Video</p>
-                        </div>
+        <div className="w-full max-w-2xl mx-auto mb-10">
+            <form onSubmit={handleSubmit} className="relative z-10">
+                <div className="relative group">
+                    <div className="absolute -inset-0.5 bg-linear-to-r from-primary to-blue-600 rounded-xl blur opacity-30 group-hover:opacity-75 transition duration-500"></div>
+                    <div className="relative flex flex-col md:flex-row bg-card rounded-xl shadow-2xl border border-white/10">
+                        <input
+                            type="text"
+                            className="grow bg-transparent px-4 py-4 text-base md:text-lg text-foreground placeholder:text-muted-foreground/50 outline-none rounded-lg"
+                            placeholder="Paste YouTube Video URL..."
+                            value={url}
+                            onChange={(e) => setUrl(e.target.value)}
+                            disabled={isLoading}
+                        />
 
-                        <div className="md:col-span-4 space-y-2">
-                            <label
-                                htmlFor="language"
-                                className="block text-base font-bold text-gray-700 dark:text-gray-200"
-                            >
-                                Language:
-                            </label>
-                            <select
-                                id="language"
-                                className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                                value={lang}
-                                onChange={(e) => setLang(e.target.value)}
-                                disabled={isLoading}
-                            >
-                                <option value="en">English</option>
-                                <option value="es">Spanish</option>
-                                <option value="fr">French</option>
-                                <option value="de">German</option>
-                                <option value="hi">Hindi</option>
-                                <option value="ja">Japanese</option>
-                            </select>
-                        </div>
+                        <button
+                            type="submit"
+                            disabled={isLoading || !url}
+                            className="px-5 bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-lg transition-all shadow-lg hover:shadow-primary/50 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap flex items-center justify-center gap-2 cursor-pointer"
+                        >
+                            {isLoading ? (
+                                <Loader2 className="w-5 h-5 animate-spin" />
+                            ) : (
+                                "Analyze"
+                            )}
+                        </button>
                     </div>
-                </form>
-            </div>
+                </div>
+                <p className="text-center text-sm text-muted-foreground mt-4">
+                    Supports videos of any length.
+                </p>
+            </form>
         </div>
     );
 }

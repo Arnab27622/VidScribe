@@ -1,16 +1,50 @@
 @import "tailwindcss";
 
+@plugin "tailwindcss-animate";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
 
-/* Enable class-based dark mode */
-@custom-variant dark (&:where(.dark, .dark *));
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+}
 
 @layer utilities {
   .custom-scrollbar::-webkit-scrollbar {
-    width: 8px;
+    width: 6px;
+    height: 6px;
   }
 
   .custom-scrollbar::-webkit-scrollbar-track {
@@ -18,60 +52,94 @@
   }
 
   .custom-scrollbar::-webkit-scrollbar-thumb {
-    background-color: var(--color-gray-200);
-    border-radius: 9999px;
+    @apply bg-muted rounded-full;
   }
 
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background-color: var(--color-gray-300);
+    @apply bg-muted-foreground/50;
   }
 }
 
-/* Dark mode overrides using nested selectors or media query if prefer-color-scheme is used. 
-   Since tailwind v4 dark mode is usually class-based if configured or media. 
-   Assuming 'dark' class is present on html/body for manual toggle or system preference.
-   With @import "tailwindcss"; it defaults to media unless configured. 
-   However, my previous setup used 'dark:' prefix which implies class strategy often.
-   The simplest way to handle this in CSS is to use the .dark selector if class strategy is used, 
-   or @media (prefers-color-scheme: dark) if media.
-   
-   Let's support both or stick to standard CSS variables if possible.
-   But to be safe, I'll use the .dark class strategy which Next.js themes often use.
+/* 
+  Using HSL values for better control and consistency.
+  Light theme: Clean, high contrast with red accent.
+  Dark theme: Deep charcoal/zinc base, very premium feel.
 */
-
-@media (prefers-color-scheme: dark) {
-  .custom-scrollbar::-webkit-scrollbar-thumb {
-    background-color: var(--color-gray-700);
-  }
-
-  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background-color: var(--color-gray-600);
-  }
-}
-
-/* Also support .dark class if that's what is being used */
-.dark .custom-scrollbar::-webkit-scrollbar-thumb {
-  background-color: var(--color-gray-700);
-}
-
-.dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background-color: var(--color-gray-600);
-}
-
 @layer base {
   :root {
-    --background: 255 255 255;
-    --foreground: 23 23 23;
-    --foreground-rgb: 23, 23, 23;
-    --background-start-rgb: 255, 255, 255;
-    --background-end-rgb: 255, 255, 255;
+    --background: hsl(0 0% 100%);
+    --foreground: hsl(240 10% 3.9%);
+    --card: hsl(0 0% 100%);
+    --card-foreground: hsl(240 10% 3.9%);
+    --popover: hsl(0 0% 100%);
+    --popover-foreground: hsl(240 10% 3.9%);
+    --primary: hsl(346.8 77.2% 49.8%);
+    /* Red-600 equivalent */
+    --primary-foreground: hsl(355.7 100% 97.3%);
+    --secondary: hsl(240 4.8% 95.9%);
+    --secondary-foreground: hsl(240 5.9% 10%);
+    --muted: hsl(240 4.8% 95.9%);
+    --muted-foreground: hsl(240 3.8% 46.1%);
+    --accent: hsl(240 4.8% 95.9%);
+    --accent-foreground: hsl(240 5.9% 10%);
+    --destructive: hsl(0 84.2% 60.2%);
+    --destructive-foreground: hsl(0 0% 98%);
+    --border: hsl(240 5.9% 90%);
+    --input: hsl(240 5.9% 90%);
+    --ring: hsl(346.8 77.2% 49.8%);
+    --radius: 0.5rem;
   }
 
   .dark {
-    --background: 10 10 10;
-    --foreground: 250 250 250;
-    --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 0, 0, 0;
-    --background-end-rgb: 0, 0, 0;
+    /* Deep Zinc Background */
+    --background: hsl(240 10% 3.9%);
+    --foreground: hsl(0 0% 98%);
+
+    /* Slightly lighter card background for depth */
+    --card: hsl(240 6% 10%);
+    --card-foreground: hsl(0 0% 98%);
+
+    --popover: hsl(240 10% 3.9%);
+    --popover-foreground: hsl(0 0% 98%);
+
+    --primary: hsl(346.8 77.2% 49.8%);
+    --primary-foreground: hsl(355.7 100% 97.3%);
+
+    --secondary: hsl(240 6% 15%);
+    --secondary-foreground: hsl(0 0% 98%);
+
+    --muted: hsl(240 6% 15%);
+    --muted-foreground: hsl(240 5% 64.9%);
+
+    --accent: hsl(240 6% 15%);
+    --accent-foreground: hsl(0 0% 98%);
+
+    --destructive: hsl(0 62.8% 30.6%);
+    --destructive-foreground: hsl(0 85.7% 97.3%);
+
+    /* Much more subtle border */
+    --border: hsl(240 3.7% 20%);
+    --input: hsl(240 3.7% 20%);
+    --ring: hsl(346.8 77.2% 49.8%);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@layer utilities {
+  .text-glow {
+    text-shadow: 0 0 20px hsla(346.8, 77.2%, 49.8%, 0.5);
+  }
+
+  .glass-card {
+    @apply bg-card/50 backdrop-blur-xl border-border/50;
   }
 }

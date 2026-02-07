@@ -35,7 +35,7 @@ export function VideoInfoCard({ data }: VideoInfoCardProps) {
 
     return (
         <div className="bg-card text-card-foreground shadow-xl rounded-2xl border border-border/50 overflow-hidden transition-all hover:shadow-2xl">
-            <div className="relative h-48 md:h-56 w-full overflow-hidden group">
+            <div className="relative w-full overflow-hidden group">
                 {/* Background Blur Image */}
                 <div
                     className="absolute inset-0 bg-cover bg-center blur-3xl opacity-50 dark:opacity-30 scale-110"
@@ -43,7 +43,7 @@ export function VideoInfoCard({ data }: VideoInfoCardProps) {
                 />
                 <div className="absolute inset-0 bg-linear-to-t from-background via-background/60 to-transparent" />
 
-                <div className="absolute bottom-0 left-0 p-6 w-full z-10 flex flex-col md:flex-row gap-6 items-end justify-between">
+                <div className="relative py-9 px-8 w-full z-10 flex flex-col md:flex-row gap-6 items-end justify-between">
                     <div className="space-y-3 max-w-2xl">
                         <div className="flex items-center gap-3 flex-wrap">
                             <span className="bg-primary/90 text-primary-foreground text-xs px-2.5 py-1 rounded-full font-bold uppercase tracking-wide shadow-lg backdrop-blur-md">
@@ -75,7 +75,7 @@ export function VideoInfoCard({ data }: VideoInfoCardProps) {
                         </a>
                         <button
                             onClick={handleDownload}
-                            className="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl font-semibold flex items-center gap-2 transition-all shadow-lg hover:shadow-emerald-600/40 hover:-translate-y-0.5"
+                            className="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl font-semibold flex items-center gap-2 transition-all shadow-lg hover:shadow-emerald-600/40 hover:-translate-y-0.5 cursor-pointer"
                         >
                             <Download className="w-5 h-5" /> Save
                         </button>

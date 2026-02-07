@@ -15,6 +15,7 @@ export function VideoInput({ onAnalyze, isLoading }: VideoInputProps) {
         e.preventDefault();
         if (url.trim()) {
             onAnalyze(url, "auto");
+            setUrl("");
         }
     };
 
@@ -23,10 +24,10 @@ export function VideoInput({ onAnalyze, isLoading }: VideoInputProps) {
             <form onSubmit={handleSubmit} className="relative z-10">
                 <div className="relative group">
                     <div className="absolute -inset-0.5 bg-linear-to-r from-primary to-blue-600 rounded-xl blur opacity-30 group-hover:opacity-75 transition duration-500"></div>
-                    <div className="relative flex flex-col md:flex-row bg-card rounded-xl shadow-2xl border border-white/10">
+                    <div className="relative flex flex-col md:flex-row items-stretch bg-card rounded-xl shadow-2xl border border-white/10 overflow-hidden min-h-15">
                         <input
                             type="text"
-                            className="grow bg-transparent px-4 py-4 text-base md:text-lg text-foreground placeholder:text-muted-foreground/50 outline-none rounded-lg"
+                            className="grow bg-transparent px-6 py-4 text-base md:text-lg text-foreground placeholder:text-muted-foreground/50 outline-none border-none focus:ring-0"
                             placeholder="Paste YouTube Video URL..."
                             value={url}
                             onChange={(e) => setUrl(e.target.value)}
@@ -36,7 +37,7 @@ export function VideoInput({ onAnalyze, isLoading }: VideoInputProps) {
                         <button
                             type="submit"
                             disabled={isLoading || !url}
-                            className="px-5 bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-lg transition-all shadow-lg hover:shadow-primary/50 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap flex items-center justify-center gap-2 cursor-pointer"
+                            className="px-10 bg-primary hover:bg-primary/90 text-primary-foreground font-extrabold transition-all disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap flex items-center justify-center gap-2 cursor-pointer active:brightness-110 m-0 rounded-none border-none"
                         >
                             {isLoading ? (
                                 <Loader2 className="w-5 h-5 animate-spin" />

@@ -27,7 +27,7 @@ export function ModeToggle() {
     return (
         <button
             onClick={toggleTheme}
-            className="relative p-2.5 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-all focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background border border-border/50 shadow-sm"
+            className="relative p-2.5 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-all focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background border border-border/50 shadow-sm cursor-pointer"
             aria-label="Toggle theme"
         >
             <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />

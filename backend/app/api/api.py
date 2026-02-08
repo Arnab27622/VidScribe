@@ -31,26 +31,45 @@ async def fetch_youtube_transcript(video_id: str, lang: str = "en") -> tuple[lis
     Tries to find the requested language, or falls back to English/Auto.
     """
     max_retries = 3
-    cookies_path = os.path.join(os.getcwd(), "youtube_cookies.txt")
+    # Look for cookies in current dir and parent dir to handle different Render configs
+    cwd = os.getcwd()
+    possible_paths = [
+        os.path.join(cwd, "youtube_cookies.txt"),
+        os.path.join(os.path.dirname(cwd), "youtube_cookies.txt")
+    ]
     
+    logger.info(f"CWD: {cwd}, Files: {os.listdir(cwd)[:10]}")
+    
+    cookies_path = None
+    for p in possible_paths:
+        if os.path.exists(p):
+            cookies_path = p
+            break
+
     for attempt in range(max_retries):
         try:
             # Manually handle cookies since the library version has them disabled
             session = None
-            if os.path.exists(cookies_path):
-                logger.info(f"Loading cookies from {cookies_path}")
+            if cookies_path:
+                logger.info(f"Using cookies from: {cookies_path}")
                 import requests
                 from http.cookiejar import MozillaCookieJar
                 
                 session = requests.Session()
+                # Use a real browser User-Agent to avoid simple bot detection
+                session.headers.update({
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+                })
                 cj = MozillaCookieJar(cookies_path)
                 try:
                     cj.load(ignore_discard=True, ignore_expires=True)
                     session.cookies = cj
-                    logger.info("Cookies loaded successfully into session")
+                    logger.debug("Cookies loaded successfully into session")
                 except Exception as e:
                     logger.error(f"Failed to load cookies: {e}")
                     session = None
+            else:
+                logger.warning("No youtube_cookies.txt found in expected locations")
 
             # Initialize the API with our custom session if we have one
             from youtube_transcript_api import YouTubeTranscriptApi

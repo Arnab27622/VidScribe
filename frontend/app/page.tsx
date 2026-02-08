@@ -8,12 +8,36 @@ import { TranscriptCard } from "../components/TranscriptCard";
 import { VideoAnalysisResult } from "./types";
 import { ModeToggle } from "@/components/mode-toggle";
 
+import { useRef } from "react";
+import { SkeletonLoader } from "../components/SkeletonLoader";
+import { PlayerHandle } from "../components/Player";
+
 export default function Home() {
   const [data, setData] = useState<VideoAnalysisResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const playerRef = useRef<PlayerHandle>(null);
+
+  const handleSeek = (seconds: number) => {
+    if (playerRef.current) {
+      playerRef.current.seekTo(seconds);
+
+      // Auto-scroll to player if it's embeddable results
+      const playerElement = document.getElementById('interactive-player');
+      if (playerElement) {
+        playerElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+  };
 
   const handleAnalyze = async (url: string, lang: string) => {
+    // Cancel previous request if any
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+
+    abortControllerRef.current = new AbortController();
     setIsLoading(true);
     setError(null);
     setData(null);
@@ -30,10 +54,16 @@ export default function Home() {
 
       const response = await axios.get(`${API_URL}/transcript/${videoId}`, {
         params: { lang: "auto" },
+        signal: abortControllerRef.current.signal
       });
 
       setData(response.data);
     } catch (err: any) {
+      if (axios.isCancel(err)) {
+        console.log("Request cancelled");
+        return;
+      }
+
       console.error(err);
       if (err.response && err.response.status === 429) {
         const retryAfter = err.response.headers?.['retry-after'] || '60';
@@ -96,11 +126,14 @@ export default function Home() {
           </div>
         )}
 
+        {/* Loading Skeleton */}
+        {isLoading && <SkeletonLoader />}
+
         {/* Results Section */}
         {data && (
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <VideoInfoCard data={data} />
-            <TranscriptCard transcript={data.full_transcript} videoId={data.video_id} />
+            <VideoInfoCard data={data} playerRef={playerRef} onSeek={handleSeek} />
+            <TranscriptCard transcript={data.full_transcript} videoId={data.video_id} onSeek={handleSeek} />
           </div>
         )}
       </main>

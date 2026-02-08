@@ -106,6 +106,7 @@ async def get_structured_transcript(
             f"summary:{video_id}:{detected_lang}",
             generate_structured_summary,
             transcript_str,
+            metadata.get("description", ""),
             ttl=86400,
         )
 

@@ -12,6 +12,12 @@ export interface VideoMetadata {
     channel?: string;
     published_at?: string;
     duration?: number;
+    is_embeddable?: boolean;
+}
+
+export interface KeyTopic {
+    topic: string;
+    timestamp: string;
 }
 
 export interface VideoAnalysisResult {
@@ -21,6 +27,7 @@ export interface VideoAnalysisResult {
     total_segments: number;
     metadata: VideoMetadata;
     summary: string;
-    key_topics: string[];
+    key_topics: KeyTopic[];
+    actionable_insights?: string[];
     title?: string; // Sometimes at top level
 }

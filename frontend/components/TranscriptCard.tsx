@@ -7,6 +7,7 @@ import {
     ChevronRight,
     Copy,
     Check,
+    FileText,
 } from "lucide-react";
 import { TranscriptSegment } from "../app/types";
 import { formatTime, escapeRegex } from "../app/utils";
@@ -14,13 +15,14 @@ import { formatTime, escapeRegex } from "../app/utils";
 interface TranscriptCardProps {
     transcript: TranscriptSegment[];
     videoId: string;
+    onSeek: (seconds: number) => void;
 }
 
-export function TranscriptCard({ transcript, videoId }: TranscriptCardProps) {
+export function TranscriptCard({ transcript, videoId, onSeek }: TranscriptCardProps) {
     const [searchTerm, setSearchTerm] = useState("");
     const [isHighlightMode, setIsHighlightMode] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
-    const [copied, setCopied] = useState(false);
+    const [copiedFormat, setCopiedFormat] = useState<"txt" | "md" | null>(null);
     const pageSize = 50;
 
     useEffect(() => {
@@ -50,12 +52,14 @@ export function TranscriptCard({ transcript, videoId }: TranscriptCardProps) {
             )
             .join("\n");
         navigator.clipboard.writeText(text);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
+        setCopiedFormat("txt");
+        setTimeout(() => setCopiedFormat(null), 2000);
     };
 
     const handleTimestampClick = (start: number) => {
-        window.open(`https://youtu.be/${videoId}?t=${Math.floor(start)}s`, "_blank");
+        onSeek(start);
+        // Fallback to new tab if requested or as backup
+        // window.open(`https://youtu.be/${videoId}?t=${Math.floor(start)}s`, "_blank");
     };
 
     const highlightText = (text: string, term: string) => {
@@ -115,8 +119,18 @@ export function TranscriptCard({ transcript, videoId }: TranscriptCardProps) {
                                 >
                                     {formatTime(segment.start)}
                                 </button>
-                                <div className="grow text-foreground/80 group-hover:text-foreground leading-relaxed transition-colors">
+                                <div className="grow text-foreground/80 group-hover:text-foreground leading-relaxed transition-colors pr-8 relative">
                                     {highlightText(segment.text, searchTerm)}
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            navigator.clipboard.writeText(`[${formatTime(segment.start)}] ${segment.text}`);
+                                        }}
+                                        className="absolute right-0 top-0 p-1 opacity-0 group-hover:opacity-40 hover:opacity-100! transition-all text-muted-foreground"
+                                        title="Copy segment"
+                                    >
+                                        <Copy className="w-3.5 h-3.5" />
+                                    </button>
                                 </div>
                             </div>
                         ))
@@ -147,13 +161,32 @@ export function TranscriptCard({ transcript, videoId }: TranscriptCardProps) {
                             <ChevronRight className="w-4 h-4" />
                         </button>
                         <div className="h-6 w-px bg-border mx-2"></div>
-                        <button
-                            onClick={handleCopy}
-                            className="px-4 py-2 border border-border text-muted-foreground hover:text-foreground rounded-lg flex items-center gap-2 hover:bg-muted transition-all font-medium text-xs uppercase tracking-wide cursor-pointer"
-                        >
-                            {copied ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
-                            Copy
-                        </button>
+
+                        <div className="flex bg-muted rounded-lg overflow-hidden border border-border">
+                            <button
+                                onClick={handleCopy}
+                                className="px-3 py-2 text-muted-foreground hover:text-foreground hover:bg-background transition-all font-medium text-xs uppercase tracking-wide cursor-pointer flex items-center gap-2 border-r border-border"
+                                title="Copy as Text"
+                            >
+                                {copiedFormat === "txt" ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
+                                TXT
+                            </button>
+                            <button
+                                onClick={() => {
+                                    const md = transcript
+                                        .map(seg => `**${formatTime(seg.start)}** ${seg.text}`)
+                                        .join("\n\n");
+                                    navigator.clipboard.writeText(md);
+                                    setCopiedFormat("md");
+                                    setTimeout(() => setCopiedFormat(null), 2000);
+                                }}
+                                className="px-3 py-2 text-muted-foreground hover:text-foreground hover:bg-background transition-all font-medium text-xs uppercase tracking-wide cursor-pointer flex items-center gap-2"
+                                title="Copy as Markdown"
+                            >
+                                {copiedFormat === "md" ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <FileText className="w-3.5 h-3.5" />}
+                                MD
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>

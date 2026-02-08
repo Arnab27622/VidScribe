@@ -17,6 +17,14 @@ logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # Security check: verify required environment variables
+    required_env_vars = ["GEMINI_API_KEY", "YOUTUBE_API_KEY", "REDIS_URL"]
+    missing_vars = [var for var in required_env_vars if not os.getenv(var)]
+    
+    if missing_vars:
+        logger.error(f"CRITICAL: Missing required environment variables: {', '.join(missing_vars)}")
+        # We don't exit to allow the app to show error states, but functionality will be limited
+    
     await cache.init_redis()
     if cache.redis_client:
         await FastAPILimiter.init(cache.redis_client)

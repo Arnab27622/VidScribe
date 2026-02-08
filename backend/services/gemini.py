@@ -13,13 +13,19 @@ async def generate_structured_summary(transcript_str: str) -> dict:
         transcript_str = transcript_str[:MAX_TRANSCRIPT_LENGTH] + "\n[TRUNCATED]"
 
     prompt = f"""
-    Based on the following YouTube transcription, generate a structured summary:
+    Based on the following YouTube transcription, generate a structured summary.
+    IMPORTANT: Your response MUST be in ENGLISH regardless of the original video's language.
+    If the transcription is in another language, translate and summarize it in English.
+    
+    Return a JSON object with this structure:
     {{
-      "title": "Generated Video Title",
-      "summary": "Concise summary of the main content",
-      "key_topics": ["topic1", "topic2", "topic3"]
+      "title": "Generated Video Title in English",
+      "summary": "Concise summary of the main content in English",
+      "key_topics": ["topic1", "topic2", "topic3"] (in English)
     }}
-    Return ONLY the JSON object.
+    
+    Return ONLY the JSON object, no other text.
+    
     Transcription:
     {transcript_str}
     """

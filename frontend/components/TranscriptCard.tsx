@@ -85,20 +85,17 @@ export function TranscriptCard({ transcript, videoId }: TranscriptCardProps) {
                 </div>
                 <div className="flex items-center gap-3">
                     <div className="relative group">
-                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <span className="text-muted-foreground text-xs">Search</span>
-                        </div>
                         <input
                             type="text"
-                            placeholder="..."
-                            className="pl-12 pr-4 py-2 text-sm rounded-lg border border-border bg-background/50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 text-foreground w-32 focus:w-48 transition-all"
+                            placeholder="Search..."
+                            className="pl-4 pr-4 py-2 text-sm rounded-lg border border-border bg-background/50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 text-foreground w-32 focus:w-48 transition-all placeholder:text-muted-foreground/50"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
                     </div>
                     <button
                         onClick={() => setIsHighlightMode(!isHighlightMode)}
-                        className={`p-2 rounded-lg border transition-all ${isHighlightMode ? 'bg-yellow-500/10 border-yellow-500/50 text-yellow-600 dark:text-yellow-400' : 'border-border bg-background/50 text-muted-foreground hover:bg-muted hover:text-foreground'}`}
+                        className={`p-2 rounded-lg border transition-all ${isHighlightMode ? 'bg-yellow-500/10 border-yellow-500/50 text-yellow-600 dark:text-yellow-400' : 'border-border bg-background/50 text-muted-foreground hover:bg-muted hover:text-foreground'} cursor-pointer`}
                         title="Toggle Highlight Mode"
                     >
                         <Highlighter className="w-4 h-4" />
@@ -151,7 +148,7 @@ export function TranscriptCard({ transcript, videoId }: TranscriptCardProps) {
                         <div className="h-6 w-px bg-border mx-2"></div>
                         <button
                             onClick={handleCopy}
-                            className="px-4 py-2 border border-border text-muted-foreground hover:text-foreground rounded-lg flex items-center gap-2 hover:bg-muted transition-all font-medium text-xs uppercase tracking-wide"
+                            className="px-4 py-2 border border-border text-muted-foreground hover:text-foreground rounded-lg flex items-center gap-2 hover:bg-muted transition-all font-medium text-xs uppercase tracking-wide cursor-pointer"
                         >
                             {copied ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
                             Copy

@@ -63,12 +63,17 @@ async def fetch_youtube_transcript(video_id: str, lang: str = "en") -> tuple[lis
                 session = requests.Session()
                 # Use a real browser User-Agent to avoid simple bot detection
                 session.headers.update({
-                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                    "Accept-Language": "en-US,en;q=0.9",
                 })
                 cj = MozillaCookieJar(cookies_path)
                 try:
                     cj.load(ignore_discard=True, ignore_expires=True)
                     session.cookies = cj
+                    cookie_count = len(cj)
+                    print(f"DEBUG: Successfully loaded {cookie_count} cookies into session")
+                    if cookie_count == 0:
+                        print("DEBUG WARNING: Loaded 0 cookies! Check if the file is in Netscape format.")
                 except Exception as e:
                     print(f"DEBUG ERROR: Failed to load cookie file: {e}")
                     session = None
@@ -77,9 +82,11 @@ async def fetch_youtube_transcript(video_id: str, lang: str = "en") -> tuple[lis
 
             # Initialize the API with our custom session if we have one
             from youtube_transcript_api import YouTubeTranscriptApi
+            # Important: The library's list method might still be hitting blocks
+            # if the session isn't being used for the 'Consent' page redirects.
             ytt_api = YouTubeTranscriptApi(http_client=session)
             
-            # Use the instance method 'list' instead of class method 'list_transcripts'
+            # Use the instance method 'list'
             transcript_list = await run_in_threadpool(ytt_api.list, video_id)
             
             if lang == "auto":

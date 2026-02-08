@@ -67,26 +67,31 @@ async def fetch_youtube_transcript(video_id: str, lang: str = "en") -> tuple[lis
                 youtube_transcript_api._settings.INNERTUBE_CONTEXT = {
                     "client": {
                         "clientName": "WEB",
-                        "clientVersion": "2.20240207.01.00"
+                        "clientVersion": "2.20240401.01.00"
                     }
                 }
 
                 # Use real browser headers that match a standard YouTube session
                 session.headers.update({
-                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+                    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
                     "Accept-Language": "en-US,en;q=0.9",
-                    "Accept": "*/*",
+                    "Referer": "https://www.google.com/",
                     "Origin": "https://www.youtube.com",
-                    "Referer": "https://www.youtube.com/",
+                    "DNT": "1",
+                    "Sec-GPC": "1",
                 })
+
+                # Manually set the Consent cookie which often bypasses the first bot-check redirect
+                session.cookies.set("CONSENT", "PENDING+999", domain=".youtube.com")
+                
                 cj = MozillaCookieJar(cookies_path)
                 try:
                     cj.load(ignore_discard=True, ignore_expires=True)
-                    session.cookies = cj
-                    cookie_count = len(cj)
-                    print(f"DEBUG: Successfully loaded {cookie_count} cookies into session")
-                    if cookie_count == 0:
-                        print("DEBUG WARNING: Loaded 0 cookies! Check if the file is in Netscape format.")
+                    # Merge our secret cookies into the session
+                    session.cookies.update(cj)
+                    cookie_count = len(session.cookies)
+                    print(f"DEBUG: Successfully loaded {cookie_count} cookies into session (including Consent bypass)")
                 except Exception as e:
                     print(f"DEBUG ERROR: Failed to load cookie file: {e}")
                     session = None

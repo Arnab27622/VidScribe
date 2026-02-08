@@ -43,7 +43,7 @@ export function VideoInfoCard({ data }: VideoInfoCardProps) {
                 />
                 <div className="absolute inset-0 bg-linear-to-t from-background via-background/60 to-transparent" />
 
-                <div className="relative py-9 px-8 w-full z-10 flex flex-col md:flex-row gap-6 items-end justify-between">
+                <div className="relative p-4 pb-5 md:py-9 md:px-8 w-full z-10 flex flex-col md:flex-row gap-6 items-end justify-between">
                     <div className="space-y-3 max-w-2xl">
                         <div className="flex items-center gap-3 flex-wrap">
                             <span className="bg-primary/90 text-primary-foreground text-xs px-2.5 py-1 rounded-full font-bold uppercase tracking-wide shadow-lg backdrop-blur-md">
@@ -56,10 +56,10 @@ export function VideoInfoCard({ data }: VideoInfoCardProps) {
                                 {formatDate(metadata.published_at)}
                             </span>
                         </div>
-                        <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-white leading-tight drop-shadow-lg">
+                        <h2 className="text-2xl md:text-4xl font-bold tracking-tight text-white leading-tight drop-shadow-lg">
                             {title}
                         </h2>
-                        <p className="text-white/90 font-medium text-lg drop-shadow-md">
+                        <p className="text-white/90 font-medium text-base md:text-lg drop-shadow-md">
                             {metadata.channel || "Unknown Channel"}
                         </p>
                     </div>
@@ -83,14 +83,14 @@ export function VideoInfoCard({ data }: VideoInfoCardProps) {
                 </div>
             </div>
 
-            <div className="p-8 grid grid-cols-1 lg:grid-cols-3 gap-12">
+            <div className="p-5 md:p-8 grid grid-cols-1 lg:grid-cols-3 gap-12">
                 <div className="lg:col-span-2 space-y-10">
                     <section>
                         <h3 className="text-xl font-semibold mb-4 flex items-center gap-2 text-primary">
                             <div className="w-1.5 h-6 bg-primary rounded-full" />
                             Executive Summary
                         </h3>
-                        <div className="text-foreground/90 text-base leading-8 whitespace-pre-wrap bg-muted/30 p-8 rounded-2xl border border-border/50 shadow-inner">
+                        <div className="text-foreground/90 text-xs md:text-base leading-8 whitespace-pre-wrap bg-muted/30 p-4 md:p-6 rounded-2xl border border-border/50 shadow-inner">
                             {summary || "No summary available."}
                         </div>
                     </section>
@@ -103,7 +103,7 @@ export function VideoInfoCard({ data }: VideoInfoCardProps) {
                         <div className="flex flex-wrap gap-3">
                             {key_topics?.length > 0 ? (
                                 key_topics.map((topic, index) => (
-                                    <span key={index} className="bg-primary/5 hover:bg-primary/15 text-foreground/90 text-sm px-4 py-2 rounded-xl font-semibold transition-all cursor-default border border-primary/10 hover:border-primary/30 hover:-translate-y-0.5 shadow-sm hover:shadow-md flex items-center">
+                                    <span key={index} className="bg-primary/5 hover:bg-primary/15 text-foreground/90 text-xs md:text-sm px-2 md:px-4 py-2 rounded-xl font-semibold transition-all cursor-default border border-primary/10 hover:border-primary/30 hover:-translate-y-0.5 shadow-sm hover:shadow-md flex items-center">
                                         <span className="text-primary font-bold mr-1.5">#</span>
                                         {topic}
                                     </span>
@@ -120,7 +120,7 @@ export function VideoInfoCard({ data }: VideoInfoCardProps) {
                         href={`https://youtu.be/${video_id}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="block bg-muted/20 rounded-2xl p-4 border border-border/50 aspect-video relative group overflow-hidden shadow-2xl hover:border-primary/30 transition-colors"
+                        className="block bg-muted/20 rounded-2xl p-3 md:p-4 border border-border/50 aspect-video relative group overflow-hidden shadow-2xl hover:border-primary/30 transition-colors"
                     >
                         <img
                             src={thumbnail}
@@ -128,10 +128,10 @@ export function VideoInfoCard({ data }: VideoInfoCardProps) {
                             className="w-full h-full object-cover rounded-xl opacity-90 group-hover:opacity-100 transition-all duration-500"
                         />
                         <div className="absolute inset-0 flex items-center justify-center">
-                            <div className="bg-black/60 p-4 rounded-full backdrop-blur-md group-hover:scale-110 transition-all duration-300 shadow-xl border border-white/10">
+                            <div className="bg-black/60 p-2 md:p-4 rounded-full backdrop-blur-md group-hover:scale-110 transition-all duration-300 shadow-xl border border-white/10">
                                 <svg
                                     viewBox="0 0 24 24"
-                                    className="w-10 h-10 text-[#FF0000] fill-current"
+                                    className="w-5 h-5 md:w-10 md:h-10 text-[#FF0000] fill-current"
                                     xmlns="http://www.w3.org/2000/svg"
                                 >
                                     <path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z" />
@@ -140,7 +140,7 @@ export function VideoInfoCard({ data }: VideoInfoCardProps) {
                         </div>
                     </a>
 
-                    <div className="p-6 bg-primary/5 rounded-2xl border border-primary/10">
+                    <div className="p-4 md:p-6 bg-primary/5 rounded-2xl border border-primary/10">
                         <h4 className="text-sm font-bold uppercase tracking-widest text-primary mb-3">Video Stats</h4>
                         <div className="space-y-3">
                             <div className="flex justify-between text-sm">

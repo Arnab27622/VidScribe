@@ -79,39 +79,39 @@ export function TranscriptCard({ transcript, videoId }: TranscriptCardProps) {
 
     return (
         <div className="bg-card text-card-foreground shadow-xl rounded-2xl border border-border/50 overflow-hidden flex flex-col h-150 transition-all hover:shadow-2xl">
-            <div className="bg-muted/30 border-b border-border/50 px-8 py-5 flex justify-between items-center shrink-0 backdrop-blur-sm">
-                <div className="flex items-center gap-3">
-                    <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
-                    <h3 className="text-xl font-bold tracking-tight">Transcript</h3>
+            <div className="bg-muted/30 border-b border-border/50 px-4 md:px-8 py-4 md:py-5 flex justify-between items-center shrink-0 backdrop-blur-sm gap-2">
+                <div className="flex items-center gap-2 md:gap-3">
+                    <div className="h-1.5 w-1.5 md:h-2 md:w-2 rounded-full bg-primary animate-pulse" />
+                    <h3 className="text-lg md:text-xl font-bold tracking-tight">Transcript</h3>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 md:gap-3">
                     <div className="relative group">
                         <input
                             type="text"
                             placeholder="Search..."
-                            className="pl-4 pr-4 py-2 text-sm rounded-lg border border-border bg-background/50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 text-foreground w-32 focus:w-48 transition-all placeholder:text-muted-foreground/50"
+                            className="pl-3 md:pl-4 pr-3 md:pr-4 py-1.5 md:py-2 text-xs md:text-sm rounded-lg border border-border bg-background/50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 text-foreground w-24 md:w-32 md:focus:w-48 transition-all placeholder:text-muted-foreground/50"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
                     </div>
                     <button
                         onClick={() => setIsHighlightMode(!isHighlightMode)}
-                        className={`p-2 rounded-lg border transition-all ${isHighlightMode ? 'bg-yellow-500/10 border-yellow-500/50 text-yellow-600 dark:text-yellow-400' : 'border-border bg-background/50 text-muted-foreground hover:bg-muted hover:text-foreground'} cursor-pointer`}
+                        className={`p-1.5 md:p-2 rounded-lg border transition-all ${isHighlightMode ? 'bg-yellow-500/10 border-yellow-500/50 text-yellow-600 dark:text-yellow-400' : 'border-border bg-background/50 text-muted-foreground hover:bg-muted hover:text-foreground'} cursor-pointer`}
                         title="Toggle Highlight Mode"
                     >
-                        <Highlighter className="w-4 h-4" />
+                        <Highlighter className="w-3.5 h-3.5 md:w-4 md:h-4" />
                     </button>
                 </div>
             </div>
 
             <div className="grow overflow-hidden flex flex-col min-h-0 bg-background/30">
-                <div className="grow overflow-y-auto custom-scrollbar p-6 space-y-1">
+                <div className="grow overflow-y-auto custom-scrollbar p-4 md:p-6 space-y-1">
                     {paginatedTranscript.length > 0 ? (
                         paginatedTranscript.map((segment, index) => (
-                            <div key={index} className="group p-3 hover:bg-muted/50 rounded-xl flex gap-4 text-sm transition-all border border-transparent hover:border-border/40">
+                            <div key={index} className="group md:p-3 hover:bg-muted/50 rounded-xl flex gap-4 text-sm transition-all border border-transparent hover:border-border/40">
                                 <button
                                     onClick={() => handleTimestampClick(segment.start)}
-                                    className="text-primary/70 group-hover:text-primary font-mono text-xs pt-1 min-w-14 text-right transition-colors font-medium opacity-60 group-hover:opacity-100"
+                                    className="text-primary/70 group-hover:text-primary font-mono text-xs pt-1 text-right transition-colors font-medium opacity-60 group-hover:opacity-100"
                                 >
                                     {formatTime(segment.start)}
                                 </button>

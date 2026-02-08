@@ -8,6 +8,7 @@ This is where the main 'work' happens:
 5. Returns a structured JSON response.
 """
 import logging
+import os
 from fastapi import Depends, APIRouter, HTTPException, Query
 from fastapi_limiter.depends import RateLimiter
 from fastapi.concurrency import run_in_threadpool
@@ -30,11 +31,33 @@ async def fetch_youtube_transcript(video_id: str, lang: str = "en") -> tuple[lis
     Tries to find the requested language, or falls back to English/Auto.
     """
     max_retries = 3
+    cookies_path = os.path.join(os.getcwd(), "youtube_cookies.txt")
+    
     for attempt in range(max_retries):
         try:
-            transcript_list = await run_in_threadpool(
-                YouTubeTranscriptApi.list_transcripts, video_id
-            )
+            # Manually handle cookies since the library version has them disabled
+            session = None
+            if os.path.exists(cookies_path):
+                logger.info(f"Loading cookies from {cookies_path}")
+                import requests
+                from http.cookiejar import MozillaCookieJar
+                
+                session = requests.Session()
+                cj = MozillaCookieJar(cookies_path)
+                try:
+                    cj.load(ignore_discard=True, ignore_expires=True)
+                    session.cookies = cj
+                    logger.info("Cookies loaded successfully into session")
+                except Exception as e:
+                    logger.error(f"Failed to load cookies: {e}")
+                    session = None
+
+            # Initialize the API with our custom session if we have one
+            from youtube_transcript_api import YouTubeTranscriptApi
+            ytt_api = YouTubeTranscriptApi(http_client=session)
+            
+            # Use the instance method 'list' instead of class method 'list_transcripts'
+            transcript_list = await run_in_threadpool(ytt_api.list, video_id)
             
             if lang == "auto":
                 try:

@@ -19,6 +19,12 @@ from app.core.exception_handlers import rate_limit_exceeded_handler
 
 import logging
 
+# Configure logging to ensure visibility in Render logs
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+)
+
 logger = logging.getLogger(__name__)
 
 

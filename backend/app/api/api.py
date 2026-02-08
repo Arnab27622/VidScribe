@@ -31,19 +31,24 @@ async def fetch_youtube_transcript(video_id: str, lang: str = "en") -> tuple[lis
     Tries to find the requested language, or falls back to English/Auto.
     """
     max_retries = 3
-    # Look for cookies in current dir and parent dir to handle different Render configs
+    # Look for cookies in multiple locations to handle Render's deployment structure
     cwd = os.getcwd()
     possible_paths = [
         os.path.join(cwd, "youtube_cookies.txt"),
-        os.path.join(os.path.dirname(cwd), "youtube_cookies.txt")
+        os.path.join(os.path.dirname(cwd), "youtube_cookies.txt"),
+        # Render often puts things in /etc/secrets or just the root
+        "/opt/render/project/src/backend/youtube_cookies.txt",
+        "/opt/render/project/src/youtube_cookies.txt"
     ]
     
-    logger.info(f"CWD: {cwd}, Files: {os.listdir(cwd)[:10]}")
+    # We use print here because it reliably shows up in Render logs regardless of log config
+    print(f"DEBUG: Current Working Directory: {cwd}")
     
     cookies_path = None
     for p in possible_paths:
         if os.path.exists(p):
             cookies_path = p
+            print(f"DEBUG: Found cookies at: {cookies_path}")
             break
 
     for attempt in range(max_retries):
@@ -51,7 +56,7 @@ async def fetch_youtube_transcript(video_id: str, lang: str = "en") -> tuple[lis
             # Manually handle cookies since the library version has them disabled
             session = None
             if cookies_path:
-                logger.info(f"Using cookies from: {cookies_path}")
+                print(f"DEBUG: Loading cookies into session from {cookies_path}")
                 import requests
                 from http.cookiejar import MozillaCookieJar
                 
@@ -64,12 +69,11 @@ async def fetch_youtube_transcript(video_id: str, lang: str = "en") -> tuple[lis
                 try:
                     cj.load(ignore_discard=True, ignore_expires=True)
                     session.cookies = cj
-                    logger.debug("Cookies loaded successfully into session")
                 except Exception as e:
-                    logger.error(f"Failed to load cookies: {e}")
+                    print(f"DEBUG ERROR: Failed to load cookie file: {e}")
                     session = None
             else:
-                logger.warning("No youtube_cookies.txt found in expected locations")
+                print("DEBUG WARNING: youtube_cookies.txt NOT FOUND in any expected location")
 
             # Initialize the API with our custom session if we have one
             from youtube_transcript_api import YouTubeTranscriptApi

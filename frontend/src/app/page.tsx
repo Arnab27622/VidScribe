@@ -1,3 +1,8 @@
+/**
+ * Main Application Page Component.
+ * This is the 'Home' of VidScribe where everything comes together.
+ * It manages the state for video data, loading status, and error messages.
+ */
 "use client";
 
 import { useState } from "react";
@@ -31,6 +36,8 @@ export default function Home() {
     }
   };
 
+  // handleAnalyze is the 'Brain' of the frontend.
+  // It calls our FastAPI backend and handles the response.
   const handleAnalyze = async (url: string, lang: string) => {
     // Cancel previous request if any
     if (abortControllerRef.current) {

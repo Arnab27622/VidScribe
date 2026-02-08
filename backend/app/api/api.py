@@ -1,9 +1,18 @@
+"""
+API Route Handlers.
+This is where the main 'work' happens:
+1. Receives video IDs from the frontend.
+2. Fetches transcripts from YouTube.
+3. Fetches metadata (title, etc.) from YouTube.
+4. Sends everything to Gemini AI for summarization.
+5. Returns a structured JSON response.
+"""
 import logging
 from fastapi import Depends, APIRouter, HTTPException, Query
 from fastapi_limiter.depends import RateLimiter
 from fastapi.concurrency import run_in_threadpool
 import asyncio
-from youtube_transcript_api import YouTubeTranscriptApi, NoTranscriptFound, TranscriptsDisabled
+from youtube_transcript_api import YouTubeTranscriptApi, NoTranscriptFound
 from app.core.cache import get_cached_or_fetch
 from app.services.youtube import get_video_metadata, get_safe_metadata
 from app.services.gemini import generate_structured_summary
@@ -14,10 +23,12 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
-SUPPORTED_LANGS = ["en", "es", "fr", "de", "hi", "ja"]
-
 
 async def fetch_youtube_transcript(video_id: str, lang: str = "en") -> tuple[list[dict], str]:
+    """
+    Directly interacts with the 'youtube_transcript_api' library.
+    Tries to find the requested language, or falls back to English/Auto.
+    """
     max_retries = 3
     for attempt in range(max_retries):
         try:
@@ -80,6 +91,10 @@ async def fetch_youtube_transcript(video_id: str, lang: str = "en") -> tuple[lis
 async def get_structured_transcript(
     video_id: str, lang: str = Query("auto", description="Transcript language code. Use 'auto' for detection.")
 ):
+    """
+    The main endpoint: GET /transcript/{video_id}
+    Orchestrates the entire analysis process.
+    """
     try:
         validate_video_id(video_id)
     except ValueError as e:

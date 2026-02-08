@@ -1,3 +1,7 @@
+"""
+YouTube Data API Service.
+Fetches video metadata like title, duration, and channel information.
+"""
 import logging
 import httpx
 from app.core.config import YOUTUBE_API_KEY
@@ -7,6 +11,7 @@ logger = logging.getLogger(__name__)
 
 
 async def get_video_metadata(video_id: str) -> dict:
+    """Uses the Google YouTube Data API v3 to get detailed info about a video."""
     try:
         async with httpx.AsyncClient(timeout=10.0) as client:
             response = await client.get(

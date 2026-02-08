@@ -1,3 +1,8 @@
+/**
+ * ThemeProvider Component.
+ * Wraps the entire application and manages the CSS variables for Dark/Light mode.
+ * Powered by the 'next-themes' library.
+ */
 "use client";
 
 import { ThemeProvider as NextThemesProvider } from "next-themes";

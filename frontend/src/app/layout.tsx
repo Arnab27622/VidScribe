@@ -1,3 +1,8 @@
+/**
+ * Root Layout Component.
+ * Defines the skeleton of every page, including fonts, SEO metadata, 
+ * and the ThemeProvider for Dark/Light mode.
+ */
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
@@ -13,6 +18,7 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+// SEO (Search Engine Optimization) metadata
 export const metadata: Metadata = {
   title: "VidScribe - AI-Powered YouTube Video Summarizer",
   description: "Get instant AI summaries, key topics, and full transcripts for any YouTube video. Free, fast, and powered by Gemini AI.",
@@ -33,6 +39,9 @@ export const metadata: Metadata = {
   robots: {
     index: true,
     follow: true,
+  },
+  icons: {
+    icon: "/favicon.ico",
   },
 };
 

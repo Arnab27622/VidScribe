@@ -1,3 +1,7 @@
+/**
+ * VideoInfoCard Component.
+ * Displays the core results: Title, AI Summary, Actionable Insights, and Key Topics.
+ */
 import { Download, Youtube, Copy, Check, FileText, Lightbulb, Play } from "lucide-react";
 import { useState, RefObject } from "react";
 import { VideoAnalysisResult } from "@/types";
@@ -34,6 +38,12 @@ export function VideoInfoCard({ data, playerRef, onSeek }: VideoInfoCardProps) {
     };
 
     const handleDownload = (format: 'txt' | 'md') => {
+        /**
+         * Simple file generation logic:
+         * 1. Creates a string with the summary data.
+         * 2. Turns that string into a 'Blob' (Binary Large Object).
+         * 3. Creates a temporary URL for that blob and triggers a browser download.
+         */
         const topicList =
             key_topics && key_topics.length > 0
                 ? key_topics.map(t => `- ${t}`).join("\n")

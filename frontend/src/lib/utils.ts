@@ -1,3 +1,7 @@
+/**
+ * Utility Library.
+ * Pure helper functions for formatting dates, times, and strings.
+ */
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -51,6 +55,9 @@ export function formatDate(dateStr?: string): string {
     return `${day}/${month}/${year}`;
 }
 
+/**
+ * Logic to extract a 11-character YouTube video ID from various URL formats.
+ */
 export function extractVideoId(url: string): string | null {
     // Pattern for full YouTube URLs (captures in group 2)
     const urlPattern = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]{11}).*/;

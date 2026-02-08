@@ -1,3 +1,7 @@
+"""
+Custom Exception Handlers.
+Defines how the API should respond to specific errors (like Rate Limiting).
+"""
 from fastapi import Request
 from fastapi.responses import JSONResponse
 

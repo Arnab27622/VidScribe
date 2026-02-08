@@ -1,3 +1,8 @@
+"""
+Main Entry Point for VidScribe Backend.
+This file initializes the FastAPI application, sets up security (CORS),
+and monitors the app's lifecycle (startup/shutdown).
+"""
 import os
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
@@ -17,8 +22,14 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+# The 'lifespan' function handles what happens when the app starts and stops
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    """
+    Handles startup and shutdown logic.
+    On startup: Verifies environment variables and connects to Redis.
+    On shutdown: Closes the Redis connection safely.
+    """
     # Security check: verify required environment variables
     required_env_vars = ["GEMINI_API_KEY", "YOUTUBE_API_KEY", "REDIS_URL"]
     missing_vars = [var for var in required_env_vars if not os.getenv(var)]
@@ -37,6 +48,7 @@ async def lifespan(app: FastAPI):
     await cache.close_redis()
 
 
+# Initialize the FastAPI App
 app = FastAPI(
     title="YouTube Video Summarizer",
     description="Fetches YouTube Video and generates structured summaries using Gemini AI",
@@ -44,6 +56,8 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+# Setup CORS (Cross-Origin Resource Sharing)
+# This allows our React/Next.js frontend to talk to this API
 app.add_middleware(
     CORSMiddleware,
     allow_origins=CORS_ORIGINS,
@@ -52,8 +66,10 @@ app.add_middleware(
     allow_credentials=False,
 )
 
+# Include the routes from the api module
 app.include_router(api.router)
 
+# Register custom error handler for Rate Limiting (429 errors)
 app.add_exception_handler(429, rate_limit_exceeded_handler)
 
 if __name__ == "__main__":

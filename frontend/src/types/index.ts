@@ -1,3 +1,8 @@
+/**
+ * TypeScript Data Models.
+ * These interfaces define the 'Shape' of the data we receive from the backend.
+ * They help the IDE catch bugs and provide autocompetion.
+ */
 export interface TranscriptSegment {
     text: string;
     start: number;
@@ -20,6 +25,9 @@ export interface KeyTopic {
     timestamp: string;
 }
 
+/**
+ * VideoAnalysisResult is the ultimate 'Big Object' returned by our API.
+ */
 export interface VideoAnalysisResult {
     video_id: string;
     language: string;

@@ -1,3 +1,8 @@
+/**
+ * TranscriptCard Component.
+ * An interactive, searchable display for the full video transcript.
+ * Includes pagination to handle very long videos efficiently.
+ */
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
@@ -31,6 +36,7 @@ export function TranscriptCard({ transcript, videoId, onSeek }: TranscriptCardPr
         setIsHighlightMode(false);
     }, [transcript]);
 
+    // React Memoization: only recalculates the filtered list when the search term or data changes.
     const filteredTranscript = useMemo(() => {
         if (!searchTerm || isHighlightMode) return transcript;
         return transcript.filter((segment) =>

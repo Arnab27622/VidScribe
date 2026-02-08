@@ -1,3 +1,7 @@
+/**
+ * VideoInput Component.
+ * The search bar where users paste their YouTube links.
+ */
 "use client";
 
 import { useState } from "react";
@@ -13,6 +17,7 @@ export function VideoInput({ onAnalyze, isLoading }: VideoInputProps) {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+        // Verifies the URL isn't empty before triggering analysis
         if (url.trim()) {
             onAnalyze(url, "auto");
             setUrl("");

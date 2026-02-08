@@ -1,3 +1,8 @@
+/**
+ * SkeletonLoader Component.
+ * Plays a pulsing animation while the AI is busy processing the video.
+ * It mimics the shape of the actual content to provide better UX.
+ */
 "use client";
 
 export function SkeletonLoader() {

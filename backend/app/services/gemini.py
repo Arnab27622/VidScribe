@@ -1,3 +1,7 @@
+"""
+Google Gemini AI Service.
+Handles the interaction with Google's Generative AI to create summaries.
+"""
 import logging
 import google.generativeai as genai
 from fastapi import HTTPException
@@ -11,6 +15,10 @@ model = genai.GenerativeModel("gemini-2.5-flash")
 
 
 async def generate_structured_summary(transcript_str: str, description: str = "") -> dict:
+    """
+    Sends the video transcript to Gemini AI with a specific 'system prompt'.
+    The prompt instructs Gemini to return a very specific JSON structure.
+    """
     MAX_TRANSCRIPT_LENGTH = 100000
     if len(transcript_str) > MAX_TRANSCRIPT_LENGTH:
         transcript_str = transcript_str[:MAX_TRANSCRIPT_LENGTH] + "\n[TRUNCATED]"

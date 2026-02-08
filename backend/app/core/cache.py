@@ -1,3 +1,7 @@
+"""
+Redis Caching Module.
+Implements the 'Get or Fetch' pattern to reduce API costs and improve speed.
+"""
 import json
 import logging
 import redis.asyncio as redis
@@ -9,6 +13,7 @@ redis_client = None
 
 
 async def init_redis():
+    """Establishes connection to the Redis server for caching."""
     global redis_client
     if not REDIS_URL:
         logger.warning("Redis URL not configured - caching disabled")
@@ -31,6 +36,10 @@ async def close_redis():
 
 
 async def get_cached_or_fetch(cache_key, fetch_function, *args, ttl=3600):
+    """
+    Checks Redis for a key. If found, returns it. 
+    If NOT found, runs 'fetch_function', saves the result to Redis, and returns it.
+    """
     if redis_client:
         try:
             cached = await redis_client.get(cache_key)

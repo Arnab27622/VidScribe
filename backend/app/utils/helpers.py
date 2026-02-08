@@ -1,8 +1,13 @@
+"""
+Utility Helper Functions.
+Small, reusable pieces of logic for text parsing, validation, and formatting.
+"""
 import re
 import json
 
 
 def iso8601_to_seconds(duration: str) -> int:
+    """Converts YouTube's ISO 8601 duration (e.g., PT1H2M10S) into total seconds."""
     match = re.match(r"PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?", duration)
     if not match:
         return 0
@@ -15,6 +20,10 @@ def iso8601_to_seconds(duration: str) -> int:
 
 
 def parse_gemini_response(response_text: str) -> dict:
+    """
+    Cleans and parses the text response from Gemini AI.
+    Sometimes Gemini returns JSON wrapped in markdown blocks (```json ... ```).
+    """
     try:
         json_match = re.search(r"```json\n(.*?)\n```", response_text, re.DOTALL)
         if json_match:

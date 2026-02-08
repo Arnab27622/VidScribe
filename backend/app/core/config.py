@@ -1,3 +1,7 @@
+"""
+Configuration Management Module.
+Loads environment variables from a .env file and sets up app-wide constants.
+"""
 import os
 import logging
 from dotenv import load_dotenv
@@ -6,10 +10,12 @@ load_dotenv()
 
 logger = logging.getLogger(__name__)
 
+# Fetch keys from environment variables
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY")
 REDIS_URL = os.getenv("REDIS_URL")
 
+# Validate crucial API keys
 if not GEMINI_API_KEY or not YOUTUBE_API_KEY:
     raise ValueError("Missing required API keys: GEMINI_API_KEY and YOUTUBE_API_KEY must be set")
 

@@ -1,3 +1,7 @@
+/**
+ * ModeToggle Component.
+ * A simple button to switch between Dark and Light mode.
+ */
 "use client"
 
 import * as React from "react"

@@ -1,3 +1,8 @@
+/**
+ * YouTube IFrame Player.
+ * Wraps the standard YouTube embed and allows 'Seeking' to specific times
+ * using the YouTube IFrame API's postMessage communication.
+ */
 import { useRef, useImperativeHandle, forwardRef } from "react";
 
 export interface PlayerHandle {
@@ -11,6 +16,8 @@ interface PlayerProps {
 export const Player = forwardRef<PlayerHandle, PlayerProps>(({ videoId }, ref) => {
     const iframeRef = useRef<HTMLIFrameElement>(null);
 
+    // useImperativeHandle allows the parent component (page.tsx) 
+    // to call the 'seekTo' function inside this component.
     useImperativeHandle(ref, () => ({
         seekTo: (seconds: number) => {
             if (iframeRef.current) {

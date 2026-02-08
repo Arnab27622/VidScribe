@@ -9,7 +9,7 @@ import {
     Check,
 } from "lucide-react";
 import { TranscriptSegment } from "../app/types";
-import { formatTime } from "../app/utils";
+import { formatTime, escapeRegex } from "../app/utils";
 
 interface TranscriptCardProps {
     transcript: TranscriptSegment[];
@@ -60,7 +60,8 @@ export function TranscriptCard({ transcript, videoId }: TranscriptCardProps) {
 
     const highlightText = (text: string, term: string) => {
         if (!term || !isHighlightMode) return text;
-        const parts = text.split(new RegExp(`(${term})`, "gi"));
+        // Escape special regex characters to prevent ReDoS attacks
+        const parts = text.split(new RegExp(`(${escapeRegex(term)})`, "gi"));
         return (
             <>
                 {parts.map((part, i) =>

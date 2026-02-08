@@ -1,7 +1,10 @@
+import logging
 import google.generativeai as genai
 from fastapi import HTTPException
 from config import GEMINI_API_KEY
 from utils import parse_gemini_response
+
+logger = logging.getLogger(__name__)
 
 genai.configure(api_key=GEMINI_API_KEY)
 model = genai.GenerativeModel("gemini-2.5-flash")
@@ -40,6 +43,8 @@ async def generate_structured_summary(transcript_str: str) -> dict:
         )
         return parse_gemini_response(response.text)
     except Exception as e:
+        logger.exception("Gemini API processing failed")
         raise HTTPException(
-            status_code=500, detail=f"Gemini processing failed: {str(e)}"
+            status_code=500, detail="AI summary generation failed. Please try again."
         )
+

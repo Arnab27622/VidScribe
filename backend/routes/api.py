@@ -1,13 +1,16 @@
+import logging
 from fastapi import Depends, APIRouter, HTTPException, Query
 from fastapi_limiter.depends import RateLimiter
 from fastapi.concurrency import run_in_threadpool
 import asyncio
-from youtube_transcript_api import YouTubeTranscriptApi, NoTranscriptFound
+from youtube_transcript_api import YouTubeTranscriptApi, NoTranscriptFound, TranscriptsDisabled
 from cache import get_cached_or_fetch
 from services.youtube import get_video_metadata, get_safe_metadata
 from services.gemini import generate_structured_summary
 from utils import validate_video_id, format_transcript
 from config import RATE_LIMIT_TRANSCRIPT_TIMES, RATE_LIMIT_TRANSCRIPT_SECONDS
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -26,7 +29,7 @@ async def fetch_youtube_transcript(video_id: str, lang: str = "en") -> tuple[lis
                 try:
                     # Try English first (manual then auto-generated)
                     transcript_obj = transcript_list.find_transcript(["en"])
-                except:
+                except NoTranscriptFound:
                     # Fallback to the first available transcript
                     transcript_obj = next(iter(transcript_list))
             else:
@@ -57,8 +60,9 @@ async def fetch_youtube_transcript(video_id: str, lang: str = "en") -> tuple[lis
             return clean_data, str(transcript_obj.language_code)
         except Exception as e:
             if attempt == max_retries - 1:
+                logger.warning(f"Transcript fetch failed for video {video_id}: {str(e)}")
                 raise HTTPException(
-                    status_code=404, detail=f"Transcript unavailable: {str(e)}"
+                    status_code=404, detail="Transcript unavailable for this video"
                 )
         await asyncio.sleep(1)
 
@@ -118,4 +122,5 @@ async def get_structured_transcript(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Processing error: {str(e)}")
+        logger.exception(f"Unexpected error processing video {video_id}")
+        raise HTTPException(status_code=500, detail="An error occurred while processing your request")

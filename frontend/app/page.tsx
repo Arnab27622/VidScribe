@@ -19,7 +19,7 @@ export default function Home() {
     setData(null);
 
     try {
-      const API_URL = "http://localhost:8000";
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
       const { extractVideoId } = await import("./utils");
       const videoId = extractVideoId(url);
@@ -36,7 +36,8 @@ export default function Home() {
     } catch (err: any) {
       console.error(err);
       if (err.response && err.response.status === 429) {
-        setError("Too many requests. Please wait a minute before trying again.");
+        const retryAfter = err.response.headers?.['retry-after'] || '60';
+        setError(`Too many requests. Please wait ${retryAfter} seconds before trying again.`);
       } else {
         setError(
           err.response?.data?.detail ||

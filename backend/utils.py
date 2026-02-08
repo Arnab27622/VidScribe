@@ -1,6 +1,5 @@
 import re
 import json
-import time
 
 
 def iso8601_to_seconds(duration: str) -> int:

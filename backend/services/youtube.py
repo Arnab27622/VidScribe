@@ -1,12 +1,14 @@
+import logging
 import httpx
-from fastapi import HTTPException
 from config import YOUTUBE_API_KEY
 from utils import iso8601_to_seconds
+
+logger = logging.getLogger(__name__)
 
 
 async def get_video_metadata(video_id: str) -> dict:
     try:
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(timeout=10.0) as client:
             response = await client.get(
                 "https://www.googleapis.com/youtube/v3/videos",
                 params={
@@ -17,10 +19,12 @@ async def get_video_metadata(video_id: str) -> dict:
             )
 
         if response.status_code != 200:
+            logger.warning(f"YouTube API returned status {response.status_code} for video {video_id}")
             return {}
 
         data = response.json()
         if not data.get("items"):
+            logger.info(f"No metadata found for video {video_id}")
             return {}
 
         item = data["items"][0]
@@ -34,7 +38,11 @@ async def get_video_metadata(video_id: str) -> dict:
             "title": item["snippet"]["title"],
             "thumbnail": item["snippet"]["thumbnails"]["default"]["url"],
         }
-    except Exception:
+    except httpx.TimeoutException:
+        logger.warning(f"Timeout fetching metadata for video {video_id}")
+        return {}
+    except Exception as e:
+        logger.warning(f"Error fetching metadata for video {video_id}: {e}")
         return {}
 
 
@@ -48,3 +56,4 @@ def get_safe_metadata(video_id: str, metadata: dict) -> dict:
             "thumbnail", f"https://img.youtube.com/vi/{video_id}/default.jpg"
         ),
     }
+

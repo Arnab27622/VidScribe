@@ -14,8 +14,26 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "VidScribe",
-  description: "Summarize Youtube Videos",
+  title: "VidScribe - AI-Powered YouTube Video Summarizer",
+  description: "Get instant AI summaries, key topics, and full transcripts for any YouTube video. Free, fast, and powered by Gemini AI.",
+  keywords: ["youtube summarizer", "video transcription", "AI summary", "youtube transcript", "video to text"],
+  authors: [{ name: "VidScribe" }],
+  openGraph: {
+    title: "VidScribe - AI YouTube Summarizer",
+    description: "Get instant AI summaries for any YouTube video. Extract key topics and full transcripts in seconds.",
+    type: "website",
+    locale: "en_US",
+    siteName: "VidScribe",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "VidScribe - AI YouTube Summarizer",
+    description: "Get instant AI summaries for any YouTube video",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function RootLayout({

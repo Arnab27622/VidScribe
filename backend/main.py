@@ -10,10 +10,19 @@ from config import CORS_ORIGINS
 from exception_handlers import rate_limit_exceeded_handler
 
 
+import logging
+
+logger = logging.getLogger(__name__)
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await cache.init_redis()
-    await FastAPILimiter.init(cache.redis_client)
+    if cache.redis_client:
+        await FastAPILimiter.init(cache.redis_client)
+        logger.info("Rate limiter initialized")
+    else:
+        logger.warning("Rate limiter NOT initialized - Redis client is missing")
     yield
     await cache.close_redis()
 
@@ -28,8 +37,9 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=CORS_ORIGINS,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "OPTIONS"],
+    allow_headers=["Content-Type", "Accept"],
+    allow_credentials=False,
 )
 
 app.include_router(api.router)

@@ -1,7 +1,7 @@
 import logging
 import httpx
-from config import YOUTUBE_API_KEY
-from utils import iso8601_to_seconds
+from app.core.config import YOUTUBE_API_KEY
+from app.utils.helpers import iso8601_to_seconds
 
 logger = logging.getLogger(__name__)
 

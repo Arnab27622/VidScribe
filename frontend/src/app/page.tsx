@@ -2,15 +2,15 @@
 
 import { useState } from "react";
 import axios from "axios";
-import { VideoInput } from "../components/VideoInput";
-import { VideoInfoCard } from "../components/VideoInfoCard";
-import { TranscriptCard } from "../components/TranscriptCard";
-import { VideoAnalysisResult } from "./types";
+import { VideoInput } from "@/components/VideoInput";
+import { VideoInfoCard } from "@/components/VideoInfoCard";
+import { TranscriptCard } from "@/components/TranscriptCard";
+import { VideoAnalysisResult } from "@/types";
 import { ModeToggle } from "@/components/mode-toggle";
 
 import { useRef } from "react";
-import { SkeletonLoader } from "../components/SkeletonLoader";
-import { PlayerHandle } from "../components/Player";
+import { SkeletonLoader } from "@/components/SkeletonLoader";
+import { PlayerHandle } from "@/components/Player";
 
 export default function Home() {
   const [data, setData] = useState<VideoAnalysisResult | null>(null);
@@ -45,7 +45,7 @@ export default function Home() {
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
-      const { extractVideoId } = await import("./utils");
+      const { extractVideoId } = await import("@/lib/utils");
       const videoId = extractVideoId(url);
 
       if (!videoId) {

@@ -1,8 +1,8 @@
 import logging
 import google.generativeai as genai
 from fastapi import HTTPException
-from config import GEMINI_API_KEY
-from utils import parse_gemini_response
+from app.core.config import GEMINI_API_KEY
+from app.utils.helpers import parse_gemini_response
 
 logger = logging.getLogger(__name__)
 

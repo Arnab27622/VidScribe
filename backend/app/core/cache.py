@@ -1,7 +1,7 @@
 import json
 import logging
 import redis.asyncio as redis
-from config import REDIS_URL
+from app.core.config import REDIS_URL
 
 logger = logging.getLogger(__name__)
 

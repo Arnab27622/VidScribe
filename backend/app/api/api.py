@@ -4,11 +4,11 @@ from fastapi_limiter.depends import RateLimiter
 from fastapi.concurrency import run_in_threadpool
 import asyncio
 from youtube_transcript_api import YouTubeTranscriptApi, NoTranscriptFound, TranscriptsDisabled
-from cache import get_cached_or_fetch
-from services.youtube import get_video_metadata, get_safe_metadata
-from services.gemini import generate_structured_summary
-from utils import validate_video_id, format_transcript
-from config import RATE_LIMIT_TRANSCRIPT_TIMES, RATE_LIMIT_TRANSCRIPT_SECONDS
+from app.core.cache import get_cached_or_fetch
+from app.services.youtube import get_video_metadata, get_safe_metadata
+from app.services.gemini import generate_structured_summary
+from app.utils.helpers import validate_video_id, format_transcript
+from app.core.config import RATE_LIMIT_TRANSCRIPT_TIMES, RATE_LIMIT_TRANSCRIPT_SECONDS
 
 logger = logging.getLogger(__name__)
 

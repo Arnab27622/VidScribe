@@ -1,7 +1,7 @@
 import { Download, Youtube, Copy, Check, FileText, Lightbulb, Play } from "lucide-react";
 import { useState, RefObject } from "react";
-import { VideoAnalysisResult } from "../app/types";
-import { formatDuration, formatDate } from "../app/utils";
+import { VideoAnalysisResult } from "@/types";
+import { formatDuration, formatDate } from "@/lib/utils";
 import { Player, PlayerHandle } from "./Player";
 
 interface VideoInfoCardProps {

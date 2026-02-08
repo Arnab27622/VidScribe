@@ -3,11 +3,13 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+import logging
+
 from fastapi_limiter import FastAPILimiter
-import cache
-from routes import api
-from config import CORS_ORIGINS
-from exception_handlers import rate_limit_exceeded_handler
+from app.core import cache
+from app.api import api
+from app.core.config import CORS_ORIGINS
+from app.core.exception_handlers import rate_limit_exceeded_handler
 
 
 import logging

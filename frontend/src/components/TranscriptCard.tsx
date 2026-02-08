@@ -9,8 +9,8 @@ import {
     Check,
     FileText,
 } from "lucide-react";
-import { TranscriptSegment } from "../app/types";
-import { formatTime, escapeRegex } from "../app/utils";
+import { TranscriptSegment } from "@/types";
+import { formatTime, escapeRegex } from "@/lib/utils";
 
 interface TranscriptCardProps {
     transcript: TranscriptSegment[];

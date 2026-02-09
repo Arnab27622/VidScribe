@@ -31,80 +31,32 @@ async def fetch_youtube_transcript(video_id: str, lang: str = "en") -> tuple[lis
     Tries to find the requested language, or falls back to English/Auto.
     """
     max_retries = 3
-    # Look for cookies in multiple locations to handle Render's deployment structure
-    cwd = os.getcwd()
-    possible_paths = [
-        os.path.join(cwd, "youtube_cookies.txt"),
-        os.path.join(os.path.dirname(cwd), "youtube_cookies.txt"),
-        # Render often puts things in /etc/secrets or just the root
-        "/opt/render/project/src/backend/youtube_cookies.txt",
-        "/opt/render/project/src/youtube_cookies.txt"
-    ]
+    cookies_path = os.path.join(os.getcwd(), "youtube_cookies.txt")
     
-    # We use print here because it reliably shows up in Render logs regardless of log config
-    print(f"DEBUG: Current Working Directory: {cwd}")
-    
-    cookies_path = None
-    for p in possible_paths:
-        if os.path.exists(p):
-            cookies_path = p
-            print(f"DEBUG: Found cookies at: {cookies_path}")
-            break
-
     for attempt in range(max_retries):
         try:
             # Manually handle cookies since the library version has them disabled
             session = None
-            if cookies_path:
-                print(f"DEBUG: Loading cookies into session from {cookies_path}")
+            if os.path.exists(cookies_path):
+                logger.info(f"Loading cookies from {cookies_path}")
                 import requests
                 from http.cookiejar import MozillaCookieJar
                 
                 session = requests.Session()
-                
-                # Align the library's internal "device" with our Desktop cookies
-                import youtube_transcript_api._settings
-                youtube_transcript_api._settings.INNERTUBE_CONTEXT = {
-                    "client": {
-                        "clientName": "WEB",
-                        "clientVersion": "2.20240401.01.00"
-                    }
-                }
-
-                # Use real browser headers that match a standard YouTube session
-                session.headers.update({
-                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
-                    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
-                    "Accept-Language": "en-US,en;q=0.9",
-                    "Referer": "https://www.google.com/",
-                    "Origin": "https://www.youtube.com",
-                    "DNT": "1",
-                    "Sec-GPC": "1",
-                })
-
-                # Manually set the Consent cookie which often bypasses the first bot-check redirect
-                session.cookies.set("CONSENT", "PENDING+999", domain=".youtube.com")
-                
                 cj = MozillaCookieJar(cookies_path)
                 try:
                     cj.load(ignore_discard=True, ignore_expires=True)
-                    # Merge our secret cookies into the session
-                    session.cookies.update(cj)
-                    cookie_count = len(session.cookies)
-                    print(f"DEBUG: Successfully loaded {cookie_count} cookies into session (including Consent bypass)")
+                    session.cookies = cj
+                    logger.info("Cookies loaded successfully into session")
                 except Exception as e:
-                    print(f"DEBUG ERROR: Failed to load cookie file: {e}")
+                    logger.error(f"Failed to load cookies: {e}")
                     session = None
-            else:
-                print("DEBUG WARNING: youtube_cookies.txt NOT FOUND in any expected location")
 
             # Initialize the API with our custom session if we have one
             from youtube_transcript_api import YouTubeTranscriptApi
-            # Important: The library's list method might still be hitting blocks
-            # if the session isn't being used for the 'Consent' page redirects.
             ytt_api = YouTubeTranscriptApi(http_client=session)
             
-            # Use the instance method 'list'
+            # Use the instance method 'list' instead of class method 'list_transcripts'
             transcript_list = await run_in_threadpool(ytt_api.list, video_id)
             
             if lang == "auto":

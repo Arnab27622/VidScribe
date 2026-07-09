@@ -15,6 +15,8 @@ from app.core import cache
 from app.api import api
 from app.core.config import CORS_ORIGINS
 from app.core.exception_handlers import rate_limit_exceeded_handler
+from app.db.database import engine
+from app.db import models
 
 
 import logging
@@ -43,6 +45,11 @@ async def lifespan(app: FastAPI):
     if missing_vars:
         logger.error(f"CRITICAL: Missing required environment variables: {', '.join(missing_vars)}")
         # We don't exit to allow the app to show error states, but functionality will be limited
+        
+    # Initialize DB tables
+    async with engine.begin() as conn:
+        await conn.run_sync(models.Base.metadata.create_all)
+        logger.info("Database tables verified/created")
     
     await cache.init_redis()
     if cache.redis_client:
@@ -67,7 +74,7 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=CORS_ORIGINS,
-    allow_methods=["GET", "OPTIONS"],
+    allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["Content-Type", "Accept"],
     allow_credentials=False,
 )

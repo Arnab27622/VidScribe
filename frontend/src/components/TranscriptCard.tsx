@@ -19,10 +19,10 @@ import { formatTime, escapeRegex } from "@/lib/utils";
 
 interface TranscriptCardProps {
     transcript: TranscriptSegment[];
-    onSeek: (seconds: number) => void;
+    videoId: string;
 }
 
-export function TranscriptCard({ transcript, onSeek }: TranscriptCardProps) {
+export function TranscriptCard({ transcript, videoId }: TranscriptCardProps) {
     const [searchTerm, setSearchTerm] = useState("");
     const [isHighlightMode, setIsHighlightMode] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
@@ -56,9 +56,7 @@ export function TranscriptCard({ transcript, onSeek }: TranscriptCardProps) {
     };
 
     const handleTimestampClick = (start: number) => {
-        onSeek(start);
-        // Fallback to new tab if requested or as backup
-        // window.open(`https://youtu.be/${videoId}?t=${Math.floor(start)}s`, "_blank");
+        window.open(`https://youtu.be/${videoId}?t=${Math.floor(start)}s`, "_blank");
     };
 
     const highlightText = (text: string, term: string) => {
@@ -82,7 +80,7 @@ export function TranscriptCard({ transcript, onSeek }: TranscriptCardProps) {
 
     return (
         <div className="bg-card text-card-foreground shadow-sm rounded-lg border border-border flex flex-col h-[600px]">
-            <div className="bg-muted/50 border-b border-border px-4 md:px-6 py-4 flex justify-between items-center shrink-0">
+            <div className="sticky top-0 z-10 bg-card border-b border-border px-4 md:px-6 py-4 flex justify-between items-center shrink-0">
                 <div className="flex items-center gap-2 md:gap-3">
                     <h3 className="text-sm md:text-base font-semibold uppercase tracking-widest text-muted-foreground">Transcript</h3>
                 </div>

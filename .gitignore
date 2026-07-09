@@ -6,4 +6,5 @@ runtime.txt
 node_modules
 .next
 youtube_cookies.txt
-.vscode
+*.db
+*.sqlite3

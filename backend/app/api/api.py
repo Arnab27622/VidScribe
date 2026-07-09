@@ -16,9 +16,15 @@ import asyncio
 from youtube_transcript_api import YouTubeTranscriptApi, NoTranscriptFound
 from app.core.cache import get_cached_or_fetch
 from app.services.youtube import get_video_metadata, get_safe_metadata
-from app.services.gemini import generate_structured_summary
+from app.services.gemini import generate_structured_summary, chat_with_video, generate_summary_from_audio
+from app.services.audio import download_audio, cleanup_audio
 from app.utils.helpers import validate_video_id, format_transcript
 from app.core.config import RATE_LIMIT_TRANSCRIPT_TIMES, RATE_LIMIT_TRANSCRIPT_SECONDS
+from app.db.database import get_db
+from app.db import crud
+from sqlalchemy.ext.asyncio import AsyncSession
+from pydantic import BaseModel
+from fastapi.responses import StreamingResponse
 
 logger = logging.getLogger(__name__)
 
@@ -112,7 +118,10 @@ async def fetch_youtube_transcript(video_id: str, lang: str = "en") -> tuple[lis
     ],
 )
 async def get_structured_transcript(
-    video_id: str, lang: str = Query("auto", description="Transcript language code. Use 'auto' for detection.")
+    video_id: str, 
+    lang: str = Query("auto", description="Transcript language code. Use 'auto' for detection."),
+    target_lang: str = Query("English", description="Language for the generated summary."),
+    db: AsyncSession = Depends(get_db)
 ):
     """
     The main endpoint: GET /transcript/{video_id}
@@ -124,31 +133,76 @@ async def get_structured_transcript(
         raise HTTPException(status_code=400, detail=str(e))
 
     try:
-        # Use a special cache key for auto to store the resolved data
-        transcript_data, detected_lang = await get_cached_or_fetch(
-            f"transcript:{video_id}:{lang}",
-            fetch_youtube_transcript,
-            video_id,
-            lang,
-            ttl=86400,
-        )
-
         metadata = await get_video_metadata(video_id) or {}
         safe_metadata = get_safe_metadata(video_id, metadata)
 
-        transcript_str = "\n".join(
-            f"{seg['start']:.2f}s: {seg['text']}" for seg in transcript_data
-        )
-
-        structured_data = await get_cached_or_fetch(
-            f"summary:{video_id}:{detected_lang}",
-            generate_structured_summary,
-            transcript_str,
-            metadata.get("description", ""),
-            ttl=86400,
-        )
+        # Use a special cache key for auto to store the resolved data
+        transcript_str = ""
+        structured_data = None
+        
+        try:
+            transcript_data, detected_lang = await get_cached_or_fetch(
+                f"transcript:{video_id}:{lang}",
+                fetch_youtube_transcript,
+                video_id,
+                lang,
+                ttl=86400,
+            )
+            
+            transcript_str = "\n".join(
+                f"{seg['start']:.2f}s: {seg['text']}" for seg in transcript_data
+            )
+            
+            structured_data = await get_cached_or_fetch(
+                f"summary:{video_id}:{detected_lang}:{target_lang}",
+                generate_structured_summary,
+                transcript_str,
+                metadata.get("description", ""),
+                target_lang,
+                ttl=86400,
+            )
+            
+        except (NoTranscriptFound, Exception):
+            logger.info(f"No transcript found for {video_id}. Falling back to audio processing.")
+            detected_lang = lang if lang != "auto" else "English"
+            
+            # Download Audio
+            audio_path = await get_cached_or_fetch(
+                f"audio_dl:{video_id}",
+                lambda v_id: __import__('asyncio').to_thread(download_audio, v_id),
+                video_id,
+                ttl=3600
+            )
+            
+            if not audio_path:
+                raise HTTPException(status_code=404, detail="No transcript available and audio download failed.")
+                
+            structured_data = await get_cached_or_fetch(
+                f"summary_audio:{video_id}:{target_lang}",
+                generate_summary_from_audio,
+                audio_path,
+                metadata.get("description", ""),
+                target_lang,
+                ttl=86400,
+            )
+            
+            # Since there's no transcript available, we will provide an empty one or a placeholder
+            transcript_data = [{"start": 0, "duration": 0, "text": "Transcript not available. Summary generated from audio."}]
+            
+            # Cleanup audio file asynchronously
+            __import__('asyncio').create_task(__import__('asyncio').to_thread(cleanup_audio, audio_path))
 
         formatted_transcript = format_transcript(transcript_data)
+
+        # Save to history database
+        thumbnail = safe_metadata["thumbnail"]
+        await crud.create_history_record(
+            db=db,
+            video_id=video_id,
+            title=structured_data.get("title", "Untitled Video"),
+            thumbnail=thumbnail,
+            language=target_lang
+        )
 
         return {
             "video_id": video_id,
@@ -163,3 +217,44 @@ async def get_structured_transcript(
     except Exception as e:
         logger.exception(f"Unexpected error processing video {video_id}")
         raise HTTPException(status_code=500, detail="An error occurred while processing your request")
+
+@router.get("/history")
+async def get_recent_summaries(db: AsyncSession = Depends(get_db)):
+    """Fetches the 10 most recently summarized videos."""
+    history = await crud.get_recent_history(db, limit=10)
+    return history
+
+class ChatRequest(BaseModel):
+    question: str
+    lang: str = "auto"
+
+@router.post("/chat/{video_id}")
+async def chat_video(video_id: str, request: ChatRequest):
+    """
+    Asks a question to Gemini based on the video transcript (Streams the response).
+    """
+    try:
+        validate_video_id(video_id)
+        
+        # Try to get the transcript from cache or re-fetch it
+        transcript_data, detected_lang = await get_cached_or_fetch(
+            f"transcript:{video_id}:{request.lang}",
+            fetch_youtube_transcript,
+            video_id,
+            request.lang,
+            ttl=86400,
+        )
+        
+        transcript_str = "\n".join(
+            f"{seg['start']:.2f}s: {seg['text']}" for seg in transcript_data
+        )
+        
+        # Stream the response
+        return StreamingResponse(
+            chat_with_video(transcript_str, request.question),
+            media_type="text/event-stream"
+        )
+        
+    except Exception as e:
+        logger.exception(f"Error in chat for video {video_id}")
+        raise HTTPException(status_code=500, detail="Failed to process chat question")

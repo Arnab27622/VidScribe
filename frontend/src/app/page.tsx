@@ -10,35 +10,23 @@ import axios from "axios";
 import { VideoInput } from "@/components/VideoInput";
 import { VideoInfoCard } from "@/components/VideoInfoCard";
 import { TranscriptCard } from "@/components/TranscriptCard";
+import { VideoChat } from "@/components/VideoChat";
+import { RecentHistory } from "@/components/RecentHistory";
 import { VideoAnalysisResult } from "@/types";
 import { ModeToggle } from "@/components/mode-toggle";
 
 import { useRef } from "react";
 import { SkeletonLoader } from "@/components/SkeletonLoader";
-import { PlayerHandle } from "@/components/Player";
 
 export default function Home() {
   const [data, setData] = useState<VideoAnalysisResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
-  const playerRef = useRef<PlayerHandle>(null);
-
-  const handleSeek = (seconds: number) => {
-    if (playerRef.current) {
-      playerRef.current.seekTo(seconds);
-
-      // Auto-scroll to player if it's embeddable results
-      const playerElement = document.getElementById('interactive-player');
-      if (playerElement) {
-        playerElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
-    }
-  };
 
   // handleAnalyze is the 'Brain' of the frontend.
   // It calls our FastAPI backend and handles the response.
-  const handleAnalyze = async (url: string) => {
+  const handleAnalyze = async (url: string, targetLang: string = "English") => {
     // Cancel previous request if any
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
@@ -60,7 +48,7 @@ export default function Home() {
       }
 
       const response = await axios.get(`${API_URL}/transcript/${videoId}`, {
-        params: { lang: "auto" },
+        params: { lang: "auto", target_lang: targetLang },
         signal: abortControllerRef.current.signal
       });
 
@@ -120,6 +108,8 @@ export default function Home() {
                 {error}
               </div>
             )}
+            
+            <RecentHistory onSelect={handleAnalyze} />
           </div>
         </div>
 
@@ -129,8 +119,11 @@ export default function Home() {
         {/* Results Section */}
         {data && (
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <VideoInfoCard data={data} playerRef={playerRef} onSeek={handleSeek} />
-            <TranscriptCard key={data.video_id} transcript={data.full_transcript} onSeek={handleSeek} />
+            <VideoInfoCard data={data} />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <TranscriptCard key={data.video_id} transcript={data.full_transcript} videoId={data.video_id} />
+              <VideoChat videoId={data.video_id} language={data.language} />
+            </div>
           </div>
         )}
       </main>

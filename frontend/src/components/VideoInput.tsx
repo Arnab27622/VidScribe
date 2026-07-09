@@ -8,18 +8,27 @@ import { useState } from "react";
 import { Loader2 } from "lucide-react";
 
 interface VideoInputProps {
-    onAnalyze: (url: string, lang: string) => Promise<void>;
+    onAnalyze: (url: string, targetLang: string) => Promise<void>;
     isLoading: boolean;
 }
 
+const LANGUAGES = [
+    { code: "English", label: "English" },
+    { code: "Spanish", label: "Spanish" },
+    { code: "French", label: "French" },
+    { code: "German", label: "German" },
+    { code: "Hindi", label: "Hindi" },
+    { code: "Japanese", label: "Japanese" }
+];
+
 export function VideoInput({ onAnalyze, isLoading }: VideoInputProps) {
     const [url, setUrl] = useState("");
+    const [lang, setLang] = useState("English");
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        // Verifies the URL isn't empty before triggering analysis
         if (url.trim()) {
-            onAnalyze(url, "auto");
+            onAnalyze(url, lang);
             setUrl("");
         }
     };
@@ -50,9 +59,25 @@ export function VideoInput({ onAnalyze, isLoading }: VideoInputProps) {
                         )}
                     </button>
                 </div>
-                <p className="text-xs md:text-sm text-muted-foreground mt-3">
-                    Supports public YouTube videos of any length.
-                </p>
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mt-3 gap-2">
+                    <p className="text-xs md:text-sm text-muted-foreground">
+                        Supports public YouTube videos of any length.
+                    </p>
+                    <div className="flex items-center gap-2 text-xs md:text-sm text-muted-foreground">
+                        <label htmlFor="lang-select" className="font-medium">Output Language:</label>
+                        <select 
+                            id="lang-select"
+                            className="bg-transparent text-foreground outline-none cursor-pointer hover:text-primary transition-colors font-medium border-b border-dashed border-border pb-0.5"
+                            value={lang}
+                            onChange={(e) => setLang(e.target.value)}
+                            disabled={isLoading}
+                        >
+                            {LANGUAGES.map(l => (
+                                <option key={l.code} value={l.code}>{l.label}</option>
+                            ))}
+                        </select>
+                    </div>
+                </div>
             </form>
         </div>
     );

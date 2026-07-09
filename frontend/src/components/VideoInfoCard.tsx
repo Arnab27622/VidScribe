@@ -79,99 +79,89 @@ export function VideoInfoCard({ data, playerRef, onSeek }: VideoInfoCardProps) {
     };
 
     return (
-        <div className="bg-card text-card-foreground shadow-xl rounded-2xl border border-border/50 overflow-hidden transition-all hover:shadow-2xl">
-            <div className="relative w-full overflow-hidden group">
-                {/* Background Blur Image */}
-                <div
-                    className="absolute inset-0 bg-cover bg-center blur-3xl opacity-50 dark:opacity-30 scale-110"
-                    style={{ backgroundImage: `url(${thumbnail})` }}
-                />
-                <div className="absolute inset-0 bg-linear-to-t from-background via-background/60 to-transparent" />
-
-                <div className="relative p-5 md:py-9 md:px-8 w-full z-10 flex flex-col md:flex-row gap-6 items-start md:items-end justify-between">
-                    <div className="space-y-3 max-w-2xl">
-                        <div className="flex items-center gap-3 flex-wrap">
-                            <span className="bg-primary/90 text-primary-foreground text-[10px] md:text-xs px-2 md:px-2.5 py-1 rounded-full font-bold uppercase tracking-wide shadow-lg backdrop-blur-md">
-                                {language}
-                            </span>
-                            <span className="bg-black/60 text-white text-[10px] md:text-xs px-2 md:px-2.5 py-1 rounded-full font-medium backdrop-blur-md border border-white/10">
-                                {metadata.duration ? formatDuration(metadata.duration) : 'N/A'}
-                            </span>
-                            <span className="text-foreground/60 dark:text-white/80 text-xs md:text-sm font-medium flex items-center gap-1">
-                                {formatDate(metadata.published_at)}
-                            </span>
-                        </div>
-                        <h2 className="text-xl md:text-4xl font-bold tracking-tight text-foreground dark:text-white leading-tight drop-shadow-sm dark:drop-shadow-lg">
-                            {title}
-                        </h2>
-                        <p className="text-foreground/80 dark:text-white/90 font-medium text-sm md:text-lg">
-                            {metadata.channel || "Unknown Channel"}
-                        </p>
+        <div className="w-full flex flex-col gap-8">
+            <div className="w-full flex flex-col md:flex-row gap-6 items-start md:items-end justify-between pb-6 border-b border-border">
+                <div className="space-y-4 max-w-3xl">
+                    <div className="flex items-center gap-3 flex-wrap">
+                        <span className="bg-primary/10 text-primary text-[10px] md:text-xs px-2.5 py-1 rounded-sm font-bold uppercase tracking-widest border border-primary/20">
+                            {language}
+                        </span>
+                        <span className="bg-muted text-foreground text-[10px] md:text-xs px-2.5 py-1 rounded-sm font-medium border border-border">
+                            {metadata.duration ? formatDuration(metadata.duration) : 'N/A'}
+                        </span>
+                        <span className="text-muted-foreground text-xs md:text-sm font-mono flex items-center gap-1">
+                            {formatDate(metadata.published_at)}
+                        </span>
                     </div>
+                    <h2 className="text-2xl md:text-4xl font-semibold tracking-tight text-foreground leading-tight">
+                        {title}
+                    </h2>
+                    <p className="text-muted-foreground font-mono text-xs md:text-sm">
+                        {metadata.channel || "Unknown Channel"}
+                    </p>
+                </div>
 
-                    <div className="flex items-center gap-2 md:gap-3 shrink-0 w-full md:w-auto">
-                        <div className="flex bg-emerald-600 rounded-xl overflow-hidden shadow-lg hover:shadow-emerald-600/40 hover:-translate-y-0.5 transition-all">
-                            <button
-                                onClick={() => handleDownload('txt')}
-                                className="px-3 py-2 md:px-4 md:py-2.5 text-white font-semibold flex items-center gap-2 hover:bg-emerald-700 transition-colors border-r border-white/10 text-xs md:text-base cursor-pointer"
-                                title="Download as TXT"
-                            >
-                                <Download className="w-4 h-4 md:w-5 md:h-5" /> Save
-                            </button>
-                            <button
-                                onClick={() => handleDownload('md')}
-                                className="px-2 py-2 md:px-3 md:py-2.5 text-white font-semibold flex items-center gap-2 hover:bg-emerald-700 transition-colors cursor-pointer"
-                                title="Download as Markdown"
-                            >
-                                <FileText className="w-4 h-4 md:w-5 md:h-5" />
-                            </button>
-                        </div>
-                        <a
-                            href={`https://youtu.be/${video_id}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 md:px-5 md:py-2.5 rounded-xl font-semibold flex items-center gap-2 transition-all shadow-lg hover:shadow-red-600/40 hover:-translate-y-0.5 text-xs md:text-base"
+                <div className="flex flex-wrap items-center gap-2 shrink-0 w-full md:w-auto">
+                    <div className="flex rounded-md overflow-hidden border border-border shadow-sm">
+                        <button
+                            onClick={() => handleDownload('txt')}
+                            className="px-3 py-2 bg-card hover:bg-muted text-foreground font-medium flex items-center gap-2 transition-colors border-r border-border text-xs md:text-sm cursor-pointer"
+                            title="Download as TXT"
                         >
-                            <Youtube className="w-4 h-4 md:w-5 md:h-5" /> Watch
-                        </a>
+                            <Download className="w-4 h-4" /> Save TXT
+                        </button>
+                        <button
+                            onClick={() => handleDownload('md')}
+                            className="px-3 py-2 bg-card hover:bg-muted text-foreground font-medium flex items-center gap-2 transition-colors cursor-pointer text-xs md:text-sm"
+                            title="Download as Markdown"
+                        >
+                            <FileText className="w-4 h-4" /> MD
+                        </button>
                     </div>
+                    <a
+                        href={`https://youtu.be/${video_id}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="bg-foreground text-background hover:bg-foreground/90 px-4 py-2 rounded-md font-medium flex items-center gap-2 transition-colors text-xs md:text-sm shadow-sm"
+                    >
+                        <Youtube className="w-4 h-4" /> Watch
+                    </a>
                 </div>
             </div>
 
-            <div className="p-3 md:p-8 grid grid-cols-1 lg:grid-cols-3 gap-12">
-                <div className="lg:col-span-2 space-y-10">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                <div className="lg:col-span-8 flex flex-col gap-8">
                     <section>
                         <div className="flex justify-between items-center mb-4">
-                            <h3 className="text-xl font-semibold flex items-center gap-2 text-primary">
-                                <div className="w-1.5 h-6 bg-primary rounded-full" />
+                            <h3 className="text-lg font-semibold text-foreground">
                                 Executive Summary
                             </h3>
                             <button
                                 onClick={handleCopySummary}
-                                className="p-2 hover:bg-muted rounded-lg transition-all text-muted-foreground hover:text-foreground border border-transparent hover:border-border"
+                                className="p-2 hover:bg-muted rounded-md transition-colors text-muted-foreground hover:text-foreground"
                                 title="Copy Summary"
                             >
-                                {copiedSummary ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
+                                {copiedSummary ? <Check className="w-4 h-4 text-primary" /> : <Copy className="w-4 h-4" />}
                             </button>
                         </div>
-                        <div className="text-foreground/90 text-xs md:text-base leading-8 whitespace-pre-wrap bg-muted/30 p-4 md:p-6 rounded-2xl border border-border/50 shadow-inner group relative">
+                        <div className="text-foreground/90 text-sm md:text-base leading-relaxed whitespace-pre-wrap bg-card p-6 rounded-lg border border-border">
                             {summary || "No summary available."}
                         </div>
                     </section>
 
                     {actionable_insights && actionable_insights.length > 0 && (
                         <section>
-                            <h3 className="text-xl font-semibold mb-4 flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
-                                <Lightbulb className="w-6 h-6" />
+                            <h3 className="text-lg font-semibold mb-4 text-foreground flex items-center gap-2">
+                                <Lightbulb className="w-5 h-5 text-primary" />
                                 Actionable Insights
                             </h3>
                             <div className="grid grid-cols-1 gap-3">
                                 {actionable_insights.map((insight, index) => (
-                                    <div key={index} className="flex gap-4 p-4 rounded-xl bg-emerald-500/5 border border-emerald-500/10 hover:border-emerald-500/30 transition-all">
-                                        <div className="shrink-0 w-6 h-6 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-600 dark:text-emerald-400 font-bold text-xs mt-0.5">
+                                    <div key={index} className="flex gap-4 p-4 rounded-lg bg-card border border-border">
+                                        <div className="shrink-0 w-6 h-6 rounded bg-primary/10 flex items-center justify-center text-primary font-mono text-xs">
                                             {index + 1}
                                         </div>
-                                        <p className="text-foreground/80 text-sm md:text-base leading-relaxed italic">
+                                        <p className="text-foreground/90 text-sm md:text-base leading-relaxed">
                                             {insight}
                                         </p>
                                     </div>
@@ -181,11 +171,10 @@ export function VideoInfoCard({ data, playerRef, onSeek }: VideoInfoCardProps) {
                     )}
 
                     <section>
-                        <h3 className="text-xl font-semibold mb-4 flex items-center gap-2 text-foreground/80">
-                            <div className="w-1.5 h-6 bg-muted-foreground/30 rounded-full" />
+                        <h3 className="text-lg font-semibold mb-4 text-foreground">
                             Key Topics
                         </h3>
-                        <div className="flex flex-wrap gap-3">
+                        <div className="flex flex-wrap gap-2">
                             {key_topics?.length > 0 ? (
                                 key_topics.map((topicData, index) => {
                                     const topic = typeof topicData === 'string' ? topicData : topicData?.topic;
@@ -196,19 +185,18 @@ export function VideoInfoCard({ data, playerRef, onSeek }: VideoInfoCardProps) {
                                             key={index}
                                             onClick={() => timestamp && onSeek(parseTimestamp(timestamp))}
                                             disabled={!timestamp}
-                                            className={`bg-primary/5 text-foreground/90 text-xs md:text-sm px-2 md:px-4 py-2 rounded-xl font-semibold transition-all border border-primary/10 shadow-sm flex items-center gap-2 group/topic ${timestamp
-                                                ? "hover:bg-primary/15 hover:border-primary/30 hover:-translate-y-0.5 hover:shadow-md"
-                                                : "opacity-60 cursor-default"
+                                            className={`bg-card text-foreground text-xs md:text-sm px-3 py-1.5 rounded-md font-medium border border-border flex items-center gap-2 group/topic ${timestamp
+                                                ? "hover:bg-muted hover:border-primary/50 transition-colors cursor-pointer"
+                                                : "opacity-70 cursor-default"
                                                 }`}
                                         >
-                                            <span className="text-primary font-bold group-hover/topic:scale-110 transition-transform">#</span>
+                                            <span className="text-muted-foreground font-mono">#</span>
                                             <span>{topic}</span>
                                             {timestamp && (
-                                                <span className="text-[10px] md:text-xs bg-muted px-1.5 py-0.5 rounded-md font-mono opacity-60 group-hover/topic:opacity-100 transition-opacity">
+                                                <span className="text-[10px] text-muted-foreground font-mono opacity-80">
                                                     {timestamp}
                                                 </span>
                                             )}
-                                            {timestamp && <Play className="w-3 h-3 opacity-0 group-hover/topic:opacity-100 transition-opacity text-primary" />}
                                         </button>
                                     );
                                 })
@@ -219,55 +207,51 @@ export function VideoInfoCard({ data, playerRef, onSeek }: VideoInfoCardProps) {
                     </section>
                 </div>
 
-                <div className="space-y-8">
+                <div className="lg:col-span-4 flex flex-col gap-6">
                     {metadata.is_embeddable ? (
                         <div className="space-y-4" id="interactive-player">
-                            <h4 className="text-sm font-bold uppercase tracking-widest text-muted-foreground font-mono flex items-center gap-2">
-                                <div className="w-1 h-3 bg-primary rounded-full" />
+                            <h4 className="text-xs font-mono uppercase tracking-widest text-muted-foreground">
                                 Interactive Player
                             </h4>
-                            <Player videoId={video_id} ref={playerRef} />
+                            <div className="rounded-lg overflow-hidden border border-border bg-card">
+                                <Player videoId={video_id} ref={playerRef} />
+                            </div>
                         </div>
                     ) : (
                         <a
                             href={`https://youtu.be/${video_id}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="block bg-muted/20 rounded-2xl p-3 md:p-4 border border-border/50 aspect-video relative group overflow-hidden shadow-2xl hover:border-primary/30 transition-colors"
+                            className="block rounded-lg border border-border aspect-video relative group overflow-hidden"
                         >
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
                                 src={thumbnail}
                                 alt="Thumbnail"
-                                className="w-full h-full object-cover rounded-xl opacity-90 group-hover:opacity-100 transition-all duration-500"
+                                className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity duration-300"
                             />
                             <div className="absolute inset-0 flex items-center justify-center">
-                                <div className="bg-black/60 p-2 md:p-4 rounded-full backdrop-blur-md group-hover:scale-110 transition-all duration-300 shadow-xl border border-white/10">
-                                    <svg
-                                        viewBox="0 0 24 24"
-                                        className="w-5 h-5 md:w-10 md:h-10 text-[#FF0000] fill-current"
-                                        xmlns="http://www.w3.org/2000/svg"
-                                    >
-                                        <path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z" />
-                                    </svg>
+                                <div className="bg-background/80 p-3 rounded-md backdrop-blur-sm border border-border shadow-sm">
+                                    <Play className="w-6 h-6 text-foreground" fill="currentColor" />
                                 </div>
                             </div>
                         </a>
                     )}
 
-                    <div className="p-4 md:p-6 bg-primary/5 rounded-2xl border border-primary/10">
-                        <h4 className="text-sm font-bold uppercase tracking-widest text-primary mb-3">Video Stats</h4>
-                        <div className="space-y-3">
+                    <div className="p-5 bg-card rounded-lg border border-border space-y-4">
+                        <h4 className="text-xs font-mono uppercase tracking-widest text-muted-foreground">Video Stats</h4>
+                        <div className="space-y-2">
                             <div className="flex justify-between text-sm">
                                 <span className="text-muted-foreground">Language</span>
-                                <span className="font-semibold">{language}</span>
+                                <span className="font-medium text-foreground">{language}</span>
                             </div>
                             <div className="flex justify-between text-sm">
                                 <span className="text-muted-foreground">Duration</span>
-                                <span className="font-semibold">{metadata.duration ? formatDuration(metadata.duration) : 'N/A'}</span>
+                                <span className="font-medium text-foreground">{metadata.duration ? formatDuration(metadata.duration) : 'N/A'}</span>
                             </div>
                             <div className="flex justify-between text-sm">
                                 <span className="text-muted-foreground">Published</span>
-                                <span className="font-semibold">{formatDate(metadata.published_at)}</span>
+                                <span className="font-medium text-foreground">{formatDate(metadata.published_at)}</span>
                             </div>
                         </div>
                     </div>

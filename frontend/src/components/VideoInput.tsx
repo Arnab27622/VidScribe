@@ -25,37 +25,33 @@ export function VideoInput({ onAnalyze, isLoading }: VideoInputProps) {
     };
 
     return (
-        <div className="w-full max-w-2xl mx-auto mb-10">
+        <div className="w-full">
             <form onSubmit={handleSubmit} className="relative z-10">
-                <div className="relative group">
-                    <div className="absolute -inset-0.5 bg-linear-to-r from-primary to-blue-600 rounded-xl blur opacity-30 group-hover:opacity-75 transition duration-500"></div>
-                    <div className="relative flex flex-row items-stretch bg-card rounded-xl shadow-2xl border border-white/10 overflow-hidden min-h-13">
+                <div className="flex flex-col sm:flex-row gap-4 items-stretch">
+                    <div className="relative grow">
                         <input
                             type="text"
-                            className="grow bg-transparent px-4 md:px-6 py-2 md:py-4 text-sm md:text-lg text-foreground placeholder:text-muted-foreground/50 outline-none border-none focus:ring-0 min-w-0"
+                            className="w-full bg-card px-4 md:px-5 py-3 md:py-4 text-sm md:text-base text-foreground placeholder:text-muted-foreground outline-none border border-border focus:border-primary transition-colors rounded-lg shadow-sm"
                             placeholder="Paste YouTube Video URL..."
                             value={url}
                             onChange={(e) => setUrl(e.target.value)}
                             disabled={isLoading}
                         />
-
-                        <div className="w-px bg-white/10" />
-
-                        <button
-                            type="submit"
-                            disabled={isLoading || !url}
-                            className="px-4 md:px-10 bg-primary hover:bg-primary/90 text-primary-foreground font-extrabold transition-all disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap flex items-center justify-center gap-2 cursor-pointer active:brightness-110 m-0 rounded-none border-none text-xs md:text-sm"
-                        >
-                            {isLoading ? (
-                                <Loader2 className="w-4 h-4 md:w-5 md:h-5 animate-spin" />
-                            ) : (
-                                "Analyze"
-                            )}
-                        </button>
                     </div>
+                    <button
+                        type="submit"
+                        disabled={isLoading || !url}
+                        className="px-6 md:px-8 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98] rounded-lg border border-transparent shadow-sm text-sm md:text-base"
+                    >
+                        {isLoading ? (
+                            <Loader2 className="w-4 h-4 md:w-5 md:h-5 animate-spin" />
+                        ) : (
+                            "Analyze Video"
+                        )}
+                    </button>
                 </div>
-                <p className="text-center text-xs md:text-sm text-muted-foreground mt-4">
-                    Supports videos of any length.
+                <p className="text-xs md:text-sm text-muted-foreground mt-3">
+                    Supports public YouTube videos of any length.
                 </p>
             </form>
         </div>

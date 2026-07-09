@@ -2,6 +2,7 @@
 Google Gemini AI Service.
 Handles the interaction with Google's Generative AI to create summaries.
 """
+
 import logging
 import google.generativeai as genai
 from fastapi import HTTPException
@@ -11,10 +12,12 @@ from app.utils.helpers import parse_gemini_response
 logger = logging.getLogger(__name__)
 
 genai.configure(api_key=GEMINI_API_KEY)
-model = genai.GenerativeModel("gemini-2.5-flash")
+model = genai.GenerativeModel("gemini-3.5-flash")
 
 
-async def generate_structured_summary(transcript_str: str, description: str = "") -> dict:
+async def generate_structured_summary(
+    transcript_str: str, description: str = ""
+) -> dict:
     """
     Sends the video transcript to Gemini AI with a specific 'system prompt'.
     The prompt instructs Gemini to return a very specific JSON structure.
@@ -26,7 +29,9 @@ async def generate_structured_summary(transcript_str: str, description: str = ""
     # Extract potential chapters from description for context
     chapters_context = ""
     if description:
-        chapters_context = f"\nVideo Description/Chapters context:\n{description[:5000]}\n"
+        chapters_context = (
+            f"\nVideo Description/Chapters context:\n{description[:5000]}\n"
+        )
 
     prompt = f"""
     Based on the following YouTube transcription and metadata, generate a professional, high-utility structured summary.
@@ -77,4 +82,3 @@ async def generate_structured_summary(transcript_str: str, description: str = ""
         raise HTTPException(
             status_code=500, detail="AI summary generation failed. Please try again."
         )
-

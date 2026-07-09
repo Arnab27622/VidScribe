@@ -5,7 +5,7 @@
  */
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import {
     Highlighter,
     ChevronLeft,
@@ -19,22 +19,15 @@ import { formatTime, escapeRegex } from "@/lib/utils";
 
 interface TranscriptCardProps {
     transcript: TranscriptSegment[];
-    videoId: string;
     onSeek: (seconds: number) => void;
 }
 
-export function TranscriptCard({ transcript, videoId, onSeek }: TranscriptCardProps) {
+export function TranscriptCard({ transcript, onSeek }: TranscriptCardProps) {
     const [searchTerm, setSearchTerm] = useState("");
     const [isHighlightMode, setIsHighlightMode] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const [copiedFormat, setCopiedFormat] = useState<"txt" | "md" | null>(null);
     const pageSize = 50;
-
-    useEffect(() => {
-        setCurrentPage(1);
-        setSearchTerm("");
-        setIsHighlightMode(false);
-    }, [transcript]);
 
     // React Memoization: only recalculates the filtered list when the search term or data changes.
     const filteredTranscript = useMemo(() => {
@@ -88,11 +81,10 @@ export function TranscriptCard({ transcript, videoId, onSeek }: TranscriptCardPr
     };
 
     return (
-        <div className="bg-card text-card-foreground shadow-xl rounded-2xl border border-border/50 overflow-hidden flex flex-col h-150 transition-all hover:shadow-2xl">
-            <div className="bg-muted/30 border-b border-border/50 px-4 md:px-8 py-4 md:py-5 flex justify-between items-center shrink-0 backdrop-blur-sm gap-2">
+        <div className="bg-card text-card-foreground shadow-sm rounded-lg border border-border flex flex-col h-[600px]">
+            <div className="bg-muted/50 border-b border-border px-4 md:px-6 py-4 flex justify-between items-center shrink-0">
                 <div className="flex items-center gap-2 md:gap-3">
-                    <div className="h-1.5 w-1.5 md:h-2 md:w-2 rounded-full bg-primary animate-pulse" />
-                    <h3 className="text-lg md:text-xl font-bold tracking-tight">Transcript</h3>
+                    <h3 className="text-sm md:text-base font-semibold uppercase tracking-widest text-muted-foreground">Transcript</h3>
                 </div>
                 <div className="flex items-center gap-2 md:gap-3">
                     <div className="relative group">
@@ -114,25 +106,25 @@ export function TranscriptCard({ transcript, videoId, onSeek }: TranscriptCardPr
                 </div>
             </div>
 
-            <div className="grow overflow-hidden flex flex-col min-h-0 bg-background/30">
+            <div className="grow overflow-hidden flex flex-col min-h-0">
                 <div className="grow overflow-y-auto custom-scrollbar p-4 md:p-6 space-y-1">
                     {paginatedTranscript.length > 0 ? (
                         paginatedTranscript.map((segment, index) => (
-                            <div key={index} className="group md:p-3 hover:bg-muted/50 rounded-xl flex gap-4 text-sm transition-all border border-transparent hover:border-border/40">
+                            <div key={index} className="group md:p-2 hover:bg-muted rounded-md flex gap-4 transition-colors">
                                 <button
                                     onClick={() => handleTimestampClick(segment.start)}
-                                    className="text-primary/70 group-hover:text-primary font-mono text-xs pt-1 text-right transition-colors font-medium opacity-60 group-hover:opacity-100"
+                                    className="text-muted-foreground group-hover:text-primary font-mono text-xs pt-1 text-right transition-colors font-medium opacity-80 cursor-pointer"
                                 >
                                     {formatTime(segment.start)}
                                 </button>
-                                <div className="grow text-foreground/80 group-hover:text-foreground leading-relaxed transition-colors pr-8 relative">
+                                <div className="grow text-foreground/90 leading-relaxed pr-8 relative text-sm md:text-base">
                                     {highlightText(segment.text, searchTerm)}
                                     <button
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             navigator.clipboard.writeText(`[${formatTime(segment.start)}] ${segment.text}`);
                                         }}
-                                        className="absolute right-0 top-0 p-1 opacity-0 group-hover:opacity-40 hover:opacity-100! transition-all text-muted-foreground"
+                                        className="absolute right-0 top-0 p-1 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-foreground cursor-pointer"
                                         title="Copy segment"
                                     >
                                         <Copy className="w-3.5 h-3.5" />
@@ -142,13 +134,13 @@ export function TranscriptCard({ transcript, videoId, onSeek }: TranscriptCardPr
                         ))
                     ) : (
                         <div className="h-full flex flex-col items-center justify-center text-muted-foreground p-10 opacity-60">
-                            <p>No segments found matching "{searchTerm}"</p>
+                            <p>No segments found matching &quot;{searchTerm}&quot;</p>
                         </div>
                     )}
                 </div>
 
-                <div className="bg-muted/30 border-t border-border/50 px-8 py-4 flex flex-col sm:flex-row justify-between items-center text-sm gap-4 shrink-0 backdrop-blur-sm">
-                    <span className="text-muted-foreground font-medium text-xs uppercase tracking-wider">
+                <div className="bg-card border-t border-border px-4 md:px-6 py-4 flex flex-col sm:flex-row justify-between items-center text-sm gap-4 shrink-0">
+                    <span className="text-muted-foreground font-mono text-xs">
                         Showing {(currentPage - 1) * pageSize + 1} - {Math.min(currentPage * pageSize, displayTranscript.length)} of {displayTranscript.length}
                     </span>
                     <div className="flex items-center gap-2">

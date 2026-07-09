@@ -62,8 +62,8 @@
 
 /* 
   Using HSL values for better control and consistency.
-  Light theme: Clean, high contrast with red accent.
-  Dark theme: Deep charcoal/zinc base, very premium feel.
+  Light theme: Clean, high contrast with Cobalt/Electric Blue accent.
+  Dark theme: Deep zinc base, very premium feel.
 */
 @layer base {
   :root {
@@ -73,9 +73,8 @@
     --card-foreground: hsl(240 10% 3.9%);
     --popover: hsl(0 0% 100%);
     --popover-foreground: hsl(240 10% 3.9%);
-    --primary: hsl(346.8 77.2% 49.8%);
-    /* Red-600 equivalent */
-    --primary-foreground: hsl(355.7 100% 97.3%);
+    --primary: hsl(221.2 83.2% 53.3%);
+    --primary-foreground: hsl(210 40% 98%);
     --secondary: hsl(240 4.8% 95.9%);
     --secondary-foreground: hsl(240 5.9% 10%);
     --muted: hsl(240 4.8% 95.9%);
@@ -86,7 +85,7 @@
     --destructive-foreground: hsl(0 0% 98%);
     --border: hsl(240 5.9% 90%);
     --input: hsl(240 5.9% 90%);
-    --ring: hsl(346.8 77.2% 49.8%);
+    --ring: hsl(221.2 83.2% 53.3%);
     --radius: 0.5rem;
   }
 
@@ -102,8 +101,8 @@
     --popover: hsl(240 10% 3.9%);
     --popover-foreground: hsl(0 0% 98%);
 
-    --primary: hsl(346.8 77.2% 49.8%);
-    --primary-foreground: hsl(355.7 100% 97.3%);
+    --primary: hsl(221.2 83.2% 53.3%);
+    --primary-foreground: hsl(210 40% 98%);
 
     --secondary: hsl(240 6% 15%);
     --secondary-foreground: hsl(0 0% 98%);
@@ -120,7 +119,7 @@
     /* Much more subtle border */
     --border: hsl(240 3.7% 20%);
     --input: hsl(240 3.7% 20%);
-    --ring: hsl(346.8 77.2% 49.8%);
+    --ring: hsl(221.2 83.2% 53.3%);
   }
 }
 
@@ -131,15 +130,5 @@
 
   body {
     @apply bg-background text-foreground;
-  }
-}
-
-@layer utilities {
-  .text-glow {
-    text-shadow: 0 0 20px hsla(346.8, 77.2%, 49.8%, 0.5);
-  }
-
-  .glass-card {
-    @apply bg-card/50 backdrop-blur-xl border-border/50;
   }
 }

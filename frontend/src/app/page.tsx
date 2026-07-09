@@ -38,7 +38,7 @@ export default function Home() {
 
   // handleAnalyze is the 'Brain' of the frontend.
   // It calls our FastAPI backend and handles the response.
-  const handleAnalyze = async (url: string, lang: string) => {
+  const handleAnalyze = async (url: string) => {
     // Cancel previous request if any
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
@@ -65,22 +65,26 @@ export default function Home() {
       });
 
       setData(response.data);
-    } catch (err: any) {
+    } catch (err: unknown) {
       if (axios.isCancel(err)) {
         console.log("Request cancelled");
         return;
       }
 
       console.error(err);
-      if (err.response && err.response.status === 429) {
-        const retryAfter = err.response.headers?.['retry-after'] || '60';
-        setError(`Too many requests. Please wait ${retryAfter} seconds before trying again.`);
+      if (axios.isAxiosError(err)) {
+        if (err.response && err.response.status === 429) {
+          const retryAfter = err.response.headers?.['retry-after'] || '60';
+          setError(`Too many requests. Please wait ${retryAfter} seconds before trying again.`);
+        } else {
+          setError(
+            err.response?.data?.detail ||
+            err.message ||
+            "An error occurred while analyzing the video."
+          );
+        }
       } else {
-        setError(
-          err.response?.data?.detail ||
-          err.message ||
-          "An error occurred while analyzing the video."
-        );
+        setError("An unexpected error occurred while analyzing the video.");
       }
     } finally {
       setIsLoading(false);
@@ -88,50 +92,36 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground font-sans section-padding transition-colors duration-300 relative overflow-hidden">
-      {/* Background Gradients */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-250 h-125 bg-primary/20 rounded-full blur-[120px] -z-10 opacity-50 dark:opacity-30 pointer-events-none" />
-      <div className="absolute bottom-0 right-0 w-200 h-150 bg-blue-500/10 rounded-full blur-[100px] -z-10 opacity-30 pointer-events-none" />
-
-      <main className="container mx-auto px-4 py-5 max-w-5xl relative z-10">
+    <div className="min-h-dvh bg-background text-foreground font-sans transition-colors duration-300">
+      <main className="container mx-auto px-6 py-8 md:py-16 max-w-7xl">
         {/* Floating Theme Toggle */}
         <div className="fixed right-4 top-2 md:right-8 md:top-8 z-50 p-1 bg-background/50 backdrop-blur-lg rounded-full border border-white/10 shadow-xl">
           <ModeToggle />
         </div>
 
-        {/* Header */}
-        <div className="relative flex flex-col items-center mb-10 pt-8 md:pt-0">
+        {/* Hero & Input Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center mb-16 pt-12">
 
-          <div className="flex flex-col items-center gap-4 text-center">
-            <div className="flex flex-row items-center justify-center gap-4">
-              <div className="p-1 md:p-2 bg-background/50 backdrop-blur-sm rounded-xl md:rounded-2xl shadow-xl ring-1 ring-white/10 dark:ring-white/5">
-                <svg
-                  viewBox="0 0 24 24"
-                  className="w-8 h-8 md:w-16 md:h-16 text-[#FF0000] fill-current"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z" />
-                </svg>
-              </div>
-              <h1 className="text-4xl md:text-7xl font-black tracking-tight bg-clip-text text-transparent bg-linear-to-b from-foreground to-foreground/70 dark:to-foreground/50 drop-shadow-sm pr-2">
-                VidScribe
-              </h1>
-            </div>
-            <p className="text-base md:text-xl lg:text-2xl text-muted-foreground font-medium max-w-2xl leading-relaxed">
-              Unlock the power of <span className="text-primary font-bold">AI insights</span> for any YouTube video instantly.
+          <div className="lg:col-span-6 flex flex-col gap-6">
+            <h1 className="text-5xl lg:text-7xl font-semibold tracking-tighter leading-[1.1] text-foreground">
+              Instant AI insights for YouTube.
+            </h1>
+            <p className="text-lg text-muted-foreground leading-relaxed max-w-[45ch]">
+              Paste any video link below. We extract the transcript, generate an executive summary, and highlight the key actionable insights.
             </p>
           </div>
-        </div>
 
-        {/* Input Section */}
-        <VideoInput onAnalyze={handleAnalyze} isLoading={isLoading} />
+          <div className="lg:col-span-6 lg:pl-12">
+            <VideoInput onAnalyze={handleAnalyze} isLoading={isLoading} />
 
-        {/* Error Message */}
-        {error && (
-          <div className="bg-destructive/15 text-destructive border border-destructive/20 p-4 rounded-lg mb-8 shadow-sm">
-            {error}
+            {/* Error Message */}
+            {error && (
+              <div className="mt-4 p-4 text-sm text-destructive border border-destructive/20 bg-destructive/5 rounded-none">
+                {error}
+              </div>
+            )}
           </div>
-        )}
+        </div>
 
         {/* Loading Skeleton */}
         {isLoading && <SkeletonLoader />}
@@ -140,7 +130,7 @@ export default function Home() {
         {data && (
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <VideoInfoCard data={data} playerRef={playerRef} onSeek={handleSeek} />
-            <TranscriptCard transcript={data.full_transcript} videoId={data.video_id} onSeek={handleSeek} />
+            <TranscriptCard key={data.video_id} transcript={data.full_transcript} onSeek={handleSeek} />
           </div>
         )}
       </main>

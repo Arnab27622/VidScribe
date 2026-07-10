@@ -1,31 +1,30 @@
+import os
 import logging
-from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
-from sqlalchemy.orm import declarative_base
+from typing import Optional, Any
+from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase, AsyncIOMotorCollection
+from dotenv import load_dotenv
 
 logger = logging.getLogger(__name__)
 
-# Using a local SQLite database file in the backend directory
-SQLALCHEMY_DATABASE_URL = "sqlite+aiosqlite:///./vidscribe_history.db"
+load_dotenv()
+MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017")
 
-# Create the async engine
-engine = create_async_engine(
-    SQLALCHEMY_DATABASE_URL, 
-    echo=False, 
-    connect_args={"check_same_thread": False} # Needed for SQLite
-)
+client: Optional[AsyncIOMotorClient[Any]] = None
+db: Optional[AsyncIOMotorDatabase[Any]] = None
+history_collection: Optional[AsyncIOMotorCollection[Any]] = None
+users_collection: Optional[AsyncIOMotorCollection[Any]] = None
 
-# Create a configured "Session" class
-AsyncSessionLocal = async_sessionmaker(
-    engine, class_=AsyncSession, expire_on_commit=False
-)
+try:
+    client = AsyncIOMotorClient(MONGO_URI)
+    db = client["vidscribe"]
+    history_collection = db["history"]
+    users_collection = db["users"]
+    logger.info("Connected to MongoDB successfully")
+except Exception as e:
+    logger.error(f"Failed to connect to MongoDB: {e}")
+    db = None
+    history_collection = None
+    users_collection = None
 
-# Base class for our models
-Base = declarative_base()
-
-# Dependency to get the DB session in FastAPI endpoints
-async def get_db():
-    async with AsyncSessionLocal() as session:
-        try:
-            yield session
-        finally:
-            await session.close()
+async def get_db() -> Optional[AsyncIOMotorDatabase[Any]]:
+    return db

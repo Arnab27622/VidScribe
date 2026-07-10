@@ -9,3 +9,7 @@ uvicorn==0.34.3
 sqlalchemy>=2.0.0
 aiosqlite>=0.20.0
 yt-dlp>=2024.03.10
+passlib[bcrypt]==1.7.4
+email-validator==2.1.1
+motor>=3.3.2
+tenacity==9.1.4

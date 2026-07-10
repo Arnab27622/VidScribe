@@ -29,10 +29,20 @@ export function VideoChat({ videoId, language = "auto" }: VideoChatProps) {
 
         try {
             const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+            
+            // Fetch token for FastAPI authentication
+            const tokenRes = await fetch("/api/auth/token");
+            let token = "";
+            if (tokenRes.ok) {
+                const data = await tokenRes.json();
+                token = data.token;
+            }
+
             const response = await fetch(`${apiUrl}/chat/${videoId}`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
                 },
                 body: JSON.stringify({ question: userMsg, lang: language }),
             });
@@ -43,22 +53,35 @@ export function VideoChat({ videoId, language = "auto" }: VideoChatProps) {
                 const reader = response.body.getReader();
                 const decoder = new TextDecoder();
                 let fullAnswer = "";
+                let lastUpdateTime = 0;
 
                 // Append an empty assistant message to start accumulating
                 setMessages((prev) => [...prev, { role: "assistant", content: "" }]);
 
                 while (true) {
                     const { done, value } = await reader.read();
-                    if (done) break;
+                    if (done) {
+                        // Final flush
+                        setMessages((prev) => {
+                            const newMessages = [...prev];
+                            newMessages[newMessages.length - 1] = { role: "assistant", content: fullAnswer };
+                            return newMessages;
+                        });
+                        break;
+                    }
 
                     const chunk = decoder.decode(value, { stream: true });
                     fullAnswer += chunk;
                     
-                    setMessages((prev) => {
-                        const newMessages = [...prev];
-                        newMessages[newMessages.length - 1] = { role: "assistant", content: fullAnswer };
-                        return newMessages;
-                    });
+                    const now = Date.now();
+                    if (now - lastUpdateTime > 50) {
+                        lastUpdateTime = now;
+                        setMessages((prev) => {
+                            const newMessages = [...prev];
+                            newMessages[newMessages.length - 1] = { role: "assistant", content: fullAnswer };
+                            return newMessages;
+                        });
+                    }
                 }
             }
         } catch (error) {

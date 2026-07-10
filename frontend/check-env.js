@@ -2,19 +2,33 @@
 const fs = require('fs');
 const path = require('path');
 
-// Manually load .env file if it exists
-const envPath = path.resolve(__dirname, '.env');
-if (fs.existsSync(envPath)) {
-    const envFileContent = fs.readFileSync(envPath, 'utf8');
-    envFileContent.split('\n').forEach(line => {
-        const match = line.match(/^([^=]+)=(.*)$/);
-        if (match) {
-            const key = match[1].trim();
-            const value = match[2].trim().replace(/^["']|["']$/g, ''); // Remove quotes
-            process.env[key] = value;
-        }
-    });
-}
+// Manually load .env files if they exist (Next.js supports both)
+const envPaths = [
+    path.resolve(__dirname, '.env'),
+    path.resolve(__dirname, '.env.local')
+];
+
+envPaths.forEach(envPath => {
+    if (fs.existsSync(envPath)) {
+        const envFileContent = fs.readFileSync(envPath, 'utf8');
+        envFileContent.split('\n').forEach(line => {
+            // Remove BOM and trim whitespace
+            const cleanLine = line.replace(/^\uFEFF/, '').trim();
+            
+            // Ignore empty lines and comments
+            if (!cleanLine || cleanLine.startsWith('#')) return;
+
+            const match = cleanLine.match(/^([^=]+?)\s*=\s*(.*)$/);
+            if (match) {
+                const key = match[1].trim();
+                const value = match[2].trim().replace(/^["']|["']$/g, ''); // Remove quotes
+                if (!process.env[key]) {
+                    process.env[key] = value;
+                }
+            }
+        });
+    }
+});
 
 const requiredEnvVars = [
     'NEXT_PUBLIC_API_URL',

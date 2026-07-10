@@ -7,6 +7,7 @@ import logging
 import json
 import google.generativeai as genai
 from fastapi import HTTPException
+from tenacity import retry, wait_exponential, stop_after_attempt
 from app.core.config import GEMINI_API_KEY
 
 logger = logging.getLogger(__name__)
@@ -15,6 +16,11 @@ genai.configure(api_key=GEMINI_API_KEY)
 model = genai.GenerativeModel("gemini-3.1-flash-lite")
 
 
+@retry(
+    stop=stop_after_attempt(4),
+    wait=wait_exponential(multiplier=1, min=2, max=15),
+    reraise=True
+)
 async def generate_structured_summary(
     transcript_str: str, description: str = "", target_lang: str = "English"
 ) -> dict:
@@ -85,12 +91,18 @@ async def generate_structured_summary(
             status_code=500, detail="AI summary generation failed. Please try again."
         )
 
+@retry(
+    stop=stop_after_attempt(4),
+    wait=wait_exponential(multiplier=1, min=2, max=15),
+    reraise=True
+)
 async def generate_summary_from_audio(filepath: str, description: str = "", target_lang: str = "English") -> dict:
     """
     Uploads audio to Gemini and generates a structured summary.
     """
+    import asyncio
     try:
-        audio_file = genai.upload_file(filepath)
+        audio_file = await asyncio.to_thread(genai.upload_file, filepath)
         
         prompt = f"""
         You are an expert content analyzer. You are provided with the audio track of a YouTube video.

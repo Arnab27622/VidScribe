@@ -25,8 +25,8 @@ def download_audio(video_id: str) -> str | None:
     }
 
     try:
-        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            info = ydl.extract_info(url, download=True)
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:  # type: ignore
+            ydl.extract_info(url, download=True)
             # Find whatever file was downloaded since the extension could be .m4a or .webm
             for f in TEMP_DIR.glob(f"{video_id}_*"):
                 return str(f)

@@ -5,8 +5,10 @@ and monitors the app's lifecycle (startup/shutdown).
 """
 import os
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
 
 import logging
 
@@ -15,11 +17,7 @@ from app.core import cache
 from app.api import api
 from app.core.config import CORS_ORIGINS
 from app.core.exception_handlers import rate_limit_exceeded_handler
-from app.db.database import engine
-from app.db import models
 
-
-import logging
 
 # Configure logging to ensure visibility in Render logs
 logging.basicConfig(
@@ -46,11 +44,6 @@ async def lifespan(app: FastAPI):
         logger.error(f"CRITICAL: Missing required environment variables: {', '.join(missing_vars)}")
         # We don't exit to allow the app to show error states, but functionality will be limited
         
-    # Initialize DB tables
-    async with engine.begin() as conn:
-        await conn.run_sync(models.Base.metadata.create_all)
-        logger.info("Database tables verified/created")
-    
     await cache.init_redis()
     if cache.redis_client:
         await FastAPILimiter.init(cache.redis_client)
@@ -75,7 +68,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=CORS_ORIGINS,
     allow_methods=["GET", "POST", "OPTIONS"],
-    allow_headers=["Content-Type", "Accept"],
+    allow_headers=["Content-Type", "Accept", "Authorization"],
     allow_credentials=False,
 )
 
@@ -85,7 +78,29 @@ app.include_router(api.router)
 # Register custom error handler for Rate Limiting (429 errors)
 app.add_exception_handler(429, rate_limit_exceeded_handler)
 
+# Register custom error handler for Pydantic Validation errors (422)
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    """
+    Normalizes Pydantic array errors into a single, clean human-readable string.
+    This prevents the React frontend from crashing due to unexpected object structures.
+    """
+    errors = exc.errors()
+    if errors:
+        first_error = errors[0]
+        # Filter out "body" from the location path to make it cleaner
+        loc = ".".join([str(x) for x in first_error.get("loc", []) if str(x) != "body"])
+        msg = first_error.get("msg", "Validation error")
+        detail = f"{loc}: {msg}" if loc else msg
+    else:
+        detail = "Invalid request format"
+        
+    return JSONResponse(
+        status_code=422,
+        content={"detail": detail}
+    )
+
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8000)  # nosec B104

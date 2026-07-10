@@ -1,11 +1,6 @@
-/**
- * Main Application Page Component.
- * This is the 'Home' of VidScribe where everything comes together.
- * It manages the state for video data, loading status, and error messages.
- */
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import { VideoInput } from "@/components/VideoInput";
 import { VideoInfoCard } from "@/components/VideoInfoCard";
@@ -14,98 +9,120 @@ import { VideoChat } from "@/components/VideoChat";
 import { RecentHistory } from "@/components/RecentHistory";
 import { VideoAnalysisResult } from "@/types";
 import { ModeToggle } from "@/components/mode-toggle";
-
-import { useRef } from "react";
+import { useSession, signOut } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { LogOut, User } from "lucide-react";
 import { SkeletonLoader } from "@/components/SkeletonLoader";
+import { useMutation } from "@tanstack/react-query";
+import { pageStyles } from "./page.styles";
+import { analyzeVideo } from "@/lib/api";
 
 export default function Home() {
-  const [data, setData] = useState<VideoAnalysisResult | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const abortControllerRef = useRef<AbortController | null>(null);
+  const { data: session, status } = useSession();
+  const router = useRouter();
 
-  // handleAnalyze is the 'Brain' of the frontend.
-  // It calls our FastAPI backend and handles the response.
-  const handleAnalyze = async (url: string, targetLang: string = "English") => {
-    // Cancel previous request if any
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
+  // Local state for the successful result, so we can keep displaying it
+  // even if the mutation resets or if we want to clear it
+  const [currentResult, setCurrentResult] = useState<VideoAnalysisResult | null>(null);
+
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.push("/login");
     }
+  }, [status, router]);
 
-    abortControllerRef.current = new AbortController();
-    setIsLoading(true);
-    setError(null);
-    setData(null);
-
-    try {
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-
-      const { extractVideoId } = await import("@/lib/utils");
-      const videoId = extractVideoId(url);
-
-      if (!videoId) {
-        throw new Error("Invalid YouTube URL. Please check the link.");
-      }
-
-      const response = await axios.get(`${API_URL}/transcript/${videoId}`, {
-        params: { lang: "auto", target_lang: targetLang },
-        signal: abortControllerRef.current.signal
-      });
-
-      setData(response.data);
-    } catch (err: unknown) {
-      if (axios.isCancel(err)) {
-        console.log("Request cancelled");
-        return;
-      }
-
-      console.error(err);
-      if (axios.isAxiosError(err)) {
-        if (err.response && err.response.status === 429) {
-          const retryAfter = err.response.headers?.['retry-after'] || '60';
-          setError(`Too many requests. Please wait ${retryAfter} seconds before trying again.`);
-        } else {
-          setError(
-            err.response?.data?.detail ||
-            err.message ||
-            "An error occurred while analyzing the video."
-          );
-        }
-      } else {
-        setError("An unexpected error occurred while analyzing the video.");
-      }
-    } finally {
-      setIsLoading(false);
+  const analyzeMutation = useMutation({
+    mutationFn: analyzeVideo,
+    onSuccess: (data) => {
+      setCurrentResult(data);
     }
+  });
+
+  const handleAnalyze = (url: string, targetLang: string = "English") => {
+    analyzeMutation.mutate({ url, targetLang });
   };
 
+  if (status === "loading" || status === "unauthenticated") {
+    return (
+      <div className={pageStyles.loadingWrapper}>
+        <div className={pageStyles.loadingInner}>
+          <div className={pageStyles.loadingSpinner} />
+          <p className={pageStyles.loadingText}>Loading VidScribe...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Determine error message safely
+  let errorMessage: string | null = null;
+  if (analyzeMutation.isError) {
+    const err = analyzeMutation.error;
+    if (axios.isAxiosError(err)) {
+      if (err.response && err.response.status === 429) {
+        const retryAfter = err.response.headers?.['retry-after'] || '60';
+        errorMessage = `Too many requests. Please wait ${retryAfter} seconds before trying again.`;
+      } else {
+        errorMessage = err.response?.data?.detail || err.message || "An error occurred while analyzing the video.";
+      }
+    } else {
+      errorMessage = (err as Error).message || "An unexpected error occurred.";
+    }
+  }
+
   return (
-    <div className="min-h-dvh bg-background text-foreground font-sans transition-colors duration-300">
-      <main className="container mx-auto px-6 py-8 md:py-16 max-w-7xl">
-        {/* Floating Theme Toggle */}
-        <div className="fixed right-4 top-2 md:right-8 md:top-8 z-50 p-1 bg-background/50 backdrop-blur-lg rounded-full border border-white/10 shadow-xl">
+    <div className={pageStyles.pageWrapper}>
+      <main className={pageStyles.main}>
+        {/* Floating Header */}
+        <div className={pageStyles.headerFloating}>
+          {session?.user && (
+            <div className={pageStyles.headerUserContainer}>
+              {session.user.image ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img 
+                  src={session.user.image} 
+                  alt={session.user.name || "User"} 
+                  className={pageStyles.headerUserImage} 
+                  referrerPolicy="no-referrer"
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                    e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                  }}
+                />
+              ) : null}
+              <div className={`${pageStyles.headerUserPlaceholder} ${session.user.image ? 'hidden' : ''}`}>
+                <User className={pageStyles.headerUserIcon} />
+              </div>
+              <span className={pageStyles.headerUserName}>{session.user.name?.split(" ")[0]}</span>
+            </div>
+          )}
+          <button
+            onClick={() => signOut({ callbackUrl: "/login" })}
+            className={pageStyles.signOutButton}
+            title="Sign Out"
+          >
+            <LogOut className={pageStyles.signOutIcon} />
+          </button>
           <ModeToggle />
         </div>
 
         {/* Hero & Input Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center mb-16 pt-12">
-
-          <div className="lg:col-span-6 flex flex-col gap-6">
-            <h1 className="text-5xl lg:text-7xl font-semibold tracking-tighter leading-[1.1] text-foreground">
+        <div className={pageStyles.heroGrid}>
+          <div className={pageStyles.heroTextCol}>
+            <h1 className={pageStyles.heroTitle}>
               Instant AI insights for YouTube.
             </h1>
-            <p className="text-lg text-muted-foreground leading-relaxed max-w-[45ch]">
+            <p className={pageStyles.heroSubtitle}>
               Paste any video link below. We extract the transcript, generate an executive summary, and highlight the key actionable insights.
             </p>
           </div>
 
-          <div className="lg:col-span-6 lg:pl-12">
-            <VideoInput onAnalyze={handleAnalyze} isLoading={isLoading} />
+          <div className={pageStyles.heroInputCol}>
+            <VideoInput onAnalyze={handleAnalyze} isLoading={analyzeMutation.isPending} />
 
             {/* Error Message */}
-            {error && (
-              <div className="mt-4 p-4 text-sm text-destructive border border-destructive/20 bg-destructive/5 rounded-none">
-                {error}
+            {errorMessage && (
+              <div className={pageStyles.errorMessage}>
+                {errorMessage}
               </div>
             )}
             
@@ -114,15 +131,15 @@ export default function Home() {
         </div>
 
         {/* Loading Skeleton */}
-        {isLoading && <SkeletonLoader />}
+        {analyzeMutation.isPending && <SkeletonLoader />}
 
         {/* Results Section */}
-        {data && (
-          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <VideoInfoCard data={data} />
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <TranscriptCard key={data.video_id} transcript={data.full_transcript} videoId={data.video_id} />
-              <VideoChat videoId={data.video_id} language={data.language} />
+        {currentResult && !analyzeMutation.isPending && (
+          <div className={pageStyles.resultsWrapper}>
+            <VideoInfoCard data={currentResult} />
+            <div className={pageStyles.resultsGrid}>
+              <TranscriptCard key={currentResult.video_id} transcript={currentResult.full_transcript} videoId={currentResult.video_id} />
+              <VideoChat videoId={currentResult.video_id} language={currentResult.language} />
             </div>
           </div>
         )}

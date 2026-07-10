@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import axios from "axios";
 import { VideoInfoCard } from "@/components/VideoInfoCard";
 import { TranscriptCard } from "@/components/TranscriptCard";
@@ -11,67 +10,62 @@ import { SkeletonLoader } from "@/components/SkeletonLoader";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { useParams } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
+import { sharedVideoStyles } from "./shared-video.styles";
 
 export default function SharedVideoPage() {
     const params = useParams();
     const videoId = params.id as string;
 
-    const [data, setData] = useState<VideoAnalysisResult | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+    const { data, isLoading, isError, error } = useQuery({
+        queryKey: ["shared-video", videoId],
+        queryFn: async () => {
+            if (!videoId) throw new Error("No video ID provided");
+            const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+            const response = await axios.get(`${API_URL}/transcript/${videoId}`, {
+                params: { lang: "auto" }
+            });
+            return response.data as VideoAnalysisResult;
+        },
+        enabled: !!videoId,
+        staleTime: 5 * 60 * 1000 // Cache for 5 minutes
+    });
 
-    useEffect(() => {
-        if (!videoId) return;
-
-        const fetchSummary = async () => {
-            setIsLoading(true);
-            try {
-                const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-                const response = await axios.get(`${API_URL}/transcript/${videoId}`, {
-                    params: { lang: "auto" }
-                });
-                setData(response.data);
-            } catch (err: unknown) {
-                console.error(err);
-                if (axios.isAxiosError(err)) {
-                    setError(err.response?.data?.detail || "Failed to load shared summary.");
-                } else {
-                    setError("An unexpected error occurred.");
-                }
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        fetchSummary();
-    }, [videoId]);
+    let errorMessage: string | null = null;
+    if (isError) {
+        if (axios.isAxiosError(error)) {
+            errorMessage = error.response?.data?.detail || "Failed to load shared summary.";
+        } else {
+            errorMessage = (error as Error).message || "An unexpected error occurred.";
+        }
+    }
 
     return (
-        <div className="min-h-dvh bg-background text-foreground font-sans transition-colors duration-300">
-            <main className="container mx-auto px-6 py-8 md:py-16 max-w-7xl">
-                <div className="fixed right-4 top-2 md:right-8 md:top-8 z-50 p-1 bg-background/50 backdrop-blur-lg rounded-full border border-white/10 shadow-xl">
+        <div className={sharedVideoStyles.pageWrapper}>
+            <main className={sharedVideoStyles.main}>
+                <div className={sharedVideoStyles.headerFloating}>
                     <ModeToggle />
                 </div>
 
-                <div className="mb-8 flex items-center">
-                    <Link href="/" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors font-medium">
-                        <ArrowLeft className="w-4 h-4" />
+                <div className={sharedVideoStyles.backLinkContainer}>
+                    <Link href="/" className={sharedVideoStyles.backLink}>
+                        <ArrowLeft className={sharedVideoStyles.backIcon} />
                         Back to Home
                     </Link>
                 </div>
 
                 {isLoading && <SkeletonLoader />}
 
-                {error && (
-                    <div className="mt-4 p-4 text-sm text-destructive border border-destructive/20 bg-destructive/5 rounded-none">
-                        {error}
+                {errorMessage && (
+                    <div className={sharedVideoStyles.errorMessage}>
+                        {errorMessage}
                     </div>
                 )}
 
                 {data && (
-                    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <div className={sharedVideoStyles.resultsWrapper}>
                         <VideoInfoCard data={data} />
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div className={sharedVideoStyles.resultsGrid}>
                             <TranscriptCard key={data.video_id} transcript={data.full_transcript} videoId={data.video_id} />
                             <VideoChat videoId={data.video_id} language={data.language} />
                         </div>
